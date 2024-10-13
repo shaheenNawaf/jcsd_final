@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-full m-auto h-full">
+    <div class="flex  text-black z-20 w-full  bg-white h-full border-t-black border-[1px]">
+        <!-- APPOINTMENT PICKER -->
+        <p class="hidden" id="date-today-ref"></p>
+        <div class="w-[90%] m-auto grid grid-cols-2 mt-10 Montserrat pb-10" id="pick-date">
+            <div class="flex flex-col">
+                <span class="text-[24px] font-bold">Booking Details:</span>
+                <div class="mt-6 ml-24 flex flex-col gap-[20px]">
+                    <div class="flex flex-col text-[18px]">
+                        <span><b>Date and Time:</b></span>
+                        <span id="booking-date">{{ bookingData.date }} | {{ bookingData.time }}</span>
+                    </div>
+                    <div class="flex flex-col text-[18px]">
+                        <span><b>Service:</b></span>
+                        <span>{{ bookingData.serviceId.serviceName }}</span>
+                    </div>
+                    <div class="flex flex-col text-[18px]">
+                        <span><b>Location:</b></span>
+                        <span>{{ bookingData.locationId.location }}</span>
+                    </div>
+                    <div class="flex flex-col text-[18px]">
+                        <span><b>Customer:</b></span>
+                        <span>{{ bookingData.userId }}</span>
+                    </div>
+                    <div class="flex flex-col text-[18px]">
+                        <span><b>Address:</b></span>
+                        <span>{{ bookingData.userId }}</span>
+                    </div>
+                    <div class="flex flex-col text-[18px]">
+                        <span><b>Contact Info:</b></span>
+                        <span>{{ bookingData.userId }}</span>
+                    </div>
+                    <div class="flex flex-col text-[18px]">
+                        <span><b>Assigned Employee:</b></span>
+                        
+                        <span>
+                            {% if bookingData.assignedEmployee %}
+                                {{ bookingData.assignedEmployee.lastName }}
+                            {% else %}
+                                <i>Confirm the booking first<br/>then assign an employee</i>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-14 ml-24 flex flex-col gap-[10px]">
+                <div class="flex flex-row gap-[10px] text-[18px]">
+                    <span><b>Booking Id:</b></span>
+                    <span>{{ bookingData.id }}</span>
+                </div>
+                <div class="flex flex-row gap-[10px] text-[18px]">
+                    <span><b>Status:</b></span>
+                    <span>{{ bookingData.status }}</span>
+                </div>
+                <div class="flex flex-col text-[18px]">
+                    <span><b>Actions:</b></span>
+                    <form method="POST" class="mt-4 flex flex-col gap-[10px]" id="action-form"
+                    action="{% url 'booking-action' bookingData.id %}">{% csrf_token %}
+                        <label>Assign Employee:</label>
+                        <select class="rounded-[8px] w-[65%]" required>
+                            <option></option>
+                            <option>1</option>
+                            <option>2</option>
+                        </select>
+                        <label>Note:</label>
+                        <textarea class="rounded-[8px] h-[120px] w-[65%]" name="note" required></textarea>
+                        <input class="hidden" type="text" name="status" id="booking-status" />
+                        <div class="flex flex-row gap-[20px] mt-4  text-white text-center align-middle items-center">
+                            <button class="hover:text-[#00AEEF]"
+                            onclick="submitForm('Rejected')">
+                                <div class="w-[140px] py-[8px] bg-red-500 rounded-[6px]">
+                                    <span>Reject</span>
+                                </div>
+                            </button>
+                            <button class="hover:text-[#00AEEF]"
+                            onclick="submitForm('Accepted')">
+                                <div class="w-[140px] py-[8px] bg-green-500 rounded-[6px]">
+                                    <span>Confirm</span>
+                                </div>
+                            </button>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function convertStringToDate(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString.split(' | ');
+        var dateParts = parts[0].split('-');
+        var timeParts = parts[1].split(':');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[0], 10) - 1];
+        var day = parseInt(dateParts[1], 10);
+        var year = parseInt(dateParts[2], 10);
+        var hour = parseInt(timeParts[0], 10);
+        var minute = parseInt(timeParts[1], 10);
+        var period = hour >= 12 ? 'pm' : 'am';
+        if (hour > 12) {
+            hour = hour - 12;
+        }
+        return `${month} ${day}, ${year}, ${hour}:${minute.toString().padStart(2, '0')} ${period}`;
+    }
+    var bookingDate = document.getElementById("booking-date")
+    bookingDate.innerHTML = convertStringToDate(bookingDate.innerHTML)
+</script>
+<script>
+    function submitForm(status){
+        if(status === "Rejected"){
+            document.getElementById("booking-status").value = status
+            document.getElementById("action-form").submit()
+        }
+        document.getElementById("booking-status").value = status
+    }
+    
+</script>
+{% endblock %}

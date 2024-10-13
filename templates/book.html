@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="grid grid-cols-2 w-full m-auto h-full">
+    <div class="flex  text-black z-20 w-full  bg-white h-full border-t-black border-[1px]">
+        <!-- APPOINTMENT PICKER -->
+        <p class="hidden" id="date-today-ref"></p>
+        
+        <div class="w-[85%] flex flex-col  ml-12 mt-12" id="pick-date">
+            <a href="{% url 'home' %}" class="flex flex-row gap-[10px] hover:gap-[20px] transition-auto">
+                <img src="{% static 'images/arrow-left.svg' %}" alt="arrow left" class=""/>
+                <span class="Montserrat text-[28px]">Select Booking Date and Time </span>
+            </a>
+            <input type="text" id="date" class="hidden"/> <!-- used for validation -->
+            <input type="text" id="time" class="hidden"/> <!-- need to select dates before they can proceed to next step -->
+            
+            <div class="border-2 border-black rounded-[8px] w-full h-[559px] p-[15px] mt-6 Montserrat text-center">
+                <div class="flex flex-row">
+                    <i class="fa-solid fa-angle-left mr-auto mt-[6px] ml-[32px] cursor-pointer hover:text-[#00AEEF]"
+                    onclick="prevPageDate()"></i>
+                    <span class="w-full" id="date-today"></span>
+                    <i class="fa-solid fa-angle-right ml-auto mt-[6px] mr-[32px]  cursor-pointer hover:text-[#00AEEF]"
+                    onclick="nextPageDate()"></i>
+                </div>
+                <div id="list-of-days" class="grid grid-cols-7 gap-[20px] mt-6">
+                    
+                </div>
+            </div>
+            <button onclick="setDateInput()" class="ml-auto">
+                <div class="cursor-pointer ml-2 rounded-[10px] w-[220px] h-[50px] bg-[#00AEEF] mt-5 auto-align-middle-row gap-[15px]  hover:gap-[25px] transition-auto">
+                    <span class="mt-[-2px] Montserrat text-[20px] text-white">Select Service</span>
+                    <img src="{% static 'images/arrow-right.svg' %}" class="w-[11px] h-[14px]" alt="arrow right"/>
+                </div>
+            </button>
+        </div>
+        <!-- SERVICES PICKER -->
+        <div class="w-[85%]  flex-col   ml-12 mt-12 hidden" id="pick-service">
+            <a href="{% url 'book' %}" class="mb-4 flex flex-row gap-[10px] hover:gap-[20px] transition-auto">
+                <img src="{% static 'images/arrow-left.svg' %}" alt="arrow left" class=""/>
+                <span class="Montserrat text-[28px]">Select Service and Location</span>
+            </a>
+            <div class="border-[2px] border-black rounded-[8px] p-8">
+                <div class="mb-6">
+                    <span class="Montserrat text-[24px]">Services</span>
+                </div>
+                <div class="flex flex-col gap-[8px]">
+                    {% for service in servicesData %}
+                    <div id="service-{{service.id}}" class="servicesData grid grid-cols-2 w-full bg-[#F5F5F5] cursor-pointer hover:bg-[#00AEEF] hover:text-white"  onclick="selectService(this.id)">
+                        <div class="py-[15px] px-8  cursor-pointer ">
+                            <span class="Montserrat text-[18px]" id="servicename-{{service.id}}">{{ service.serviceName }}</span>
+                        </div>
+                        <div class="border-l-2 border-white py-[15px] px-8 cursor-pointer ">
+                            <span class="Montserrat text-[18px]">Php. {{ service.priceRange }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="my-6">
+                    <span class="Montserrat text-[24px]">Location</span>
+                </div>
+                <div class="flex flex-col gap-[8px]">
+                    {% for location in locationData %}
+                    <div id="location-{{location.id}}" class="locationsData grid grid-cols-2 w-full bg-[#F5F5F5] cursor-pointer hover:bg-[#00AEEF] hover:text-white" onclick="selectLocation(this.id)">
+                        <div class="py-[15px] px-8 ">
+                            <span class="Montserrat text-[18px]" id="locationname-{{location.id}}">{{ location.location }}</span>
+                        </div>
+                        <div class="border-l-2 border-white py-[15px] px-8 ">
+                            <span class="Montserrat text-[18px]">Php. {{ location.additionalFee }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button onclick="setBooking()" class="ml-auto">
+                <div class="cursor-pointer ml-2 rounded-[10px] w-[280px] h-[50px] bg-[#00AEEF] mt-5 auto-align-middle-row gap-[15px]  hover:gap-[25px] transition-auto">
+                    <span class="mt-[-2px] Montserrat text-[20px] text-white">Finalize and Submit</span>
+                    <img src="{% static 'images/arrow-right.svg' %}" class="w-[11px] h-[14px]" alt="arrow right"/>
+                </div>
+            </button>
+        </div>
+    </div>
+    <!-- BOOKING DETAILS -->
+    <div id="booking-details" class="w-[80%] h-[550px] z-20 m-auto mt-[-1px] hidden">
+        <div class="bg-white w-full h-full mt-[58px] rounded-[8px]">
+            <div class="w-[90%] m-auto mt-6 flex flex-col">
+                <span class="Montserrat text-[28px] font-bold">Appointment Details</span>
+                <div class="mt-8 flex flex-col">
+                    <span class="Montserrat text-[24px] font-bold">Date and Time</span>
+                    <span class="ml-16" id="date-time-value"></span>
+                </div>
+                <div class="mt-8 flex flex-col">
+                    <span class="Montserrat text-[24px] font-bold">Service</span>
+                    <span class="ml-16" id="service-value">Please select one on the Left</span>
+                </div>
+                <div class="mt-8 flex flex-col">
+                    <span class="Montserrat text-[24px] font-bold">Location</span>
+                    <span class="ml-16" id="location-value">Please select one on the Left</span>
+                </div>
+                <div class="mt-8 flex flex-col">
+                    <span class="Montserrat text-[24px] font-bold">Customer</span>
+                    <span class="ml-16" id="customer-value">{{ profileData.profileId.firstName }} {{ profileData.profileId.MiddleName }} {{ profileData.profileId.lastName }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FINALIZED BOOKING DETAILS -->
+<div id="finalized-booking-details" class="mt-[-1px] w-full h-full m-auto hidden">
+    <div class="w-[50%] h-[550px] bg-white rounded-[8px] m-auto z-20">
+        <div class="w-[90%] m-auto mt-6 flex flex-col">
+            <span class="Montserrat text-[28px]">Appointment Details</span>
+            <div class="mt-8">
+                <span class="Montserrat text-[22px]">Date and Time</span>
+                <span class="ml-16" id="date-time-value"></span>
+            </div>
+            <div class="mt-8">
+                <span class="Montserrat text-[22px]">Service</span>
+                <span class="ml-16" id="service-value">Please select one on the Left</span>
+            </div>
+            <div class="mt-8">
+                <span class="Montserrat text-[22px]">Location</span>
+                <span class="ml-16" id="location-value">Please select one on the Left</span>
+            </div>
+            <div class="mt-8">
+                <span class="Montserrat text-[22px]">Customer</span>
+                <span class="ml-16" id="customer-value">asd</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- this is the form that will be submitted to the database for saving -->
+<form class="hidden" id="booking-form" method="POST" action="{% url 'register-booking' %}">{% csrf_token %} 
+    <input name="serviceId" id="service-input"/>
+    <input name="locationId" id="location-input"/>
+    <input name="date" id="date-input"/>
+    <input name="time" id="time-input"/>
+</form>
+
+<div class="hidden">
+    {% for appointment in bookingData %}
+        <span class="user-appointment" id="{{ appointment.date }}/{{appointment.time}}">{{ appointment.date }}/{{appointment.time}}</span>
+    {% endfor %}
+</div>
+
+<script>
+    function convertStringToDate(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString.split(' | ');
+        var dateParts = parts[0].split('-');
+        var timeParts = parts[1].split(':');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[0], 10) - 1];
+        var day = parseInt(dateParts[1], 10);
+        var year = parseInt(dateParts[2], 10);
+        var hour = parseInt(timeParts[0], 10);
+        var minute = parseInt(timeParts[1], 10);
+        var period = hour >= 12 ? 'pm' : 'am';
+        if (hour > 12) {
+            hour = hour - 12;
+        }
+        return `${month} ${day}, ${year}, ${hour}:${minute.toString().padStart(2, '0')} ${period}`;
+    }
+</script>
+<script>
+    function disableTimeSlots(){ //TIME SLOT DISABLER FUNCTION
+        var availableTimeSlots = document.querySelectorAll('.time-slot');
+        var reservedTimeSlots = document.querySelectorAll('.user-appointment');
+        availableTimeSlots.forEach(function(availSlot) { //LOOPS AVAILABLE SLOTS
+            reservedTimeSlots.forEach(function(reservedSlot) { //LOOPS BOOKED SLOTS
+                if(reservedSlot.id === availSlot.id){ //IF AVAILABLE SLOT IS EQUAL TO THE BOOKED SLOT
+                    availSlot.classList.remove("time-slot") //DISABLE THE SLOT
+                    availSlot.classList.add("time-slot-inactive") //SET SLOT AS INACTIVE
+                }
+            });
+        });    
+    }
+</script>
+
+<script>
+    function getDynamicDate(){ //CALENDAR NEXT/PREVIOUS PAGE DATE FUNCTION
+        //get date from innerHTML
+        //enclose entire date process in function generateDateCalender()
+        //call it once the page load
+        //then greate a button click function that redo generateCalendar() and give new date to getDynamicDate() value
+        alert(document.getElementById('date-today').innerHTML)
+    }
+</script>
+<script>
+    function handleTimeSlotClick(event) { //ONCLICK HIGHLIGHT FUNCTION
+        var timeSlots = document.querySelectorAll('.time-slot');
+        timeSlots.forEach(function(timeSlot) {
+            timeSlot.classList.remove("time-slot-active");
+        });
+        event.srcElement.classList.add("time-slot-active")
+        document.getElementById('time').value = event.srcElement.id.split("/")[1] //assign to input field
+        document.getElementById('date').value = event.srcElement.id.split("/")[0] //assign to input field
+    }
+    function giveTimeSlotButtons(){
+        // Get all elements with the class "time-slot"
+            var timeSlots = document.querySelectorAll('.time-slot');
+
+        // Add an event listener to each time slot element
+        timeSlots.forEach(function(timeSlot) {
+            timeSlot.addEventListener('click', handleTimeSlotClick);
+        });
+    }
+</script>
+<script>
+    function generateCalendar(){ //GENERATE CALENDAR FUNCTION
+        //var originalDate = new Date(Date(Date.now())); //get date today
+        var dateToday = new Date(document.getElementById('date-today').innerHTML)
+        console.log("Generate", dateToday)
+        var originalDate = dateToday; // USE DYNAMIC DATE FUNCTION
+        var sevenDaysLater = new Date(originalDate.getTime() + (6 * 24 * 60 * 60 * 1000)); //get date 7 days from now
+        var formattedOriginalDate = originalDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); //date formatting
+        var formattedSevenDaysLater = sevenDaysLater.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); //date formatting
+        var datesArray = []; //array of dates from 7 days ex: [30, 31, 1, 2, 3, ...]
+
+        for (var date = originalDate; date <= sevenDaysLater; date.setDate(date.getDate() + 1)) { //LOOPS THE DATE FROM AND DATE TO
+            datesArray.push(`${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`); //push the dates to the array
+        }
+
+        document.getElementById('date-today').innerHTML = `${formattedOriginalDate} - ${formattedSevenDaysLater}` // show the date range of 7 days from today ex: Oct. 31 - Nov. 5, 2023
+
+        var listOfDays = document.getElementById('list-of-days');
+        var timeSlotArray = ["8:00", "9:00", "10:00", "11:00","1:00", "2:00"] // Time slots array
+
+        for (var i = 0; i < datesArray.length; i++) {
+            var dateRow = document.createElement('div'); //ADDS A DIV THAT CONTAINS THE DATE AS HEADER
+            dateRow.classList.add('date-row');
+            dateRow.id = "date-row"
+            var dateCount = document.createElement('span'); //Adds id's and class names to track the date for database saving
+            dateCount.id = `date-count-${datesArray[i]}`;
+            dateCount.classList.add("date-count")
+            dateCount.innerHTML = datesArray[i].split("-")[1];
+            dateRow.appendChild(dateCount);
+            listOfDays.appendChild(dateRow);
+            
+            for(slot of timeSlotArray){  //CREATES DIV FOR TIMESLOTS
+                var timeSlots = document.createElement('span')
+                timeSlots.classList.add("time-slot") //ADDING ID'S and CLASSNAMES TO TRACK THE TIMESLOTS
+                timeSlots.id = `${datesArray[i]}/${slot}`
+                timeSlots.innerHTML = `${slot}`
+                dateRow.appendChild(timeSlots)
+            }
+        }
+    }
+</script>
+<script>
+    function nextPageDate(){
+        const dateElement = document.getElementById("list-of-days");
+        dateElement.innerHTML = ""
+        var originalDate = new Date(document.getElementById('date-today').innerHTML.split(" - ")[0]); // USE DYNAMIC DATE FUNCTION
+        console.log('orig', originalDate)
+        var sevenDaysLater = new Date(originalDate.getTime() + (6 * 24 * 60 * 60 * 1000));
+        document.getElementById('date-today').innerHTML = sevenDaysLater //give new date to time range
+        console.log('after', document.getElementById('date-today').innerHTML)
+        generateCalendar() //generate new calendar based on new date
+        disableTimeSlots() //disable timeslots taken
+        giveTimeSlotButtons() //give timeslots button functions
+    }
+    function prevPageDate(){
+        const dateElement = document.getElementById("list-of-days");
+        dateElement.innerHTML = ""
+        var originalDate = new Date(document.getElementById('date-today').innerHTML.split(" - ")[0]); // USE DYNAMIC DATE FUNCTION
+        console.log('orig', originalDate)
+        var sevenDaysLater = new Date(originalDate.getTime() - (6 * 24 * 60 * 60 * 1000));
+        document.getElementById('date-today').innerHTML = sevenDaysLater //give new date to time range
+        console.log('after', document.getElementById('date-today').innerHTML)
+        generateCalendar() //generate new calendar based on new date
+        disableTimeSlots() //disable timeslots taken
+        giveTimeSlotButtons() //give timeslots button functions
+    }
+</script>
+<script>
+    document.getElementById('date-today').innerHTML = new Date(Date(Date.now()))
+    generateCalendar() //generate calendar
+    disableTimeSlots() //disable timeslots taken
+    giveTimeSlotButtons() //give timeslots button functions
+</script>
+
+
+<script>
+    function setDateInput(){ //SET DATE INPUT FUNCTION (for database saving)
+        let date = document.getElementById('date').value
+        let time = document.getElementById('time').value
+        let dateInput = new Date(date)
+        let dateToday = new Date() // get date today
+        // Set the time of dateToday to midnight for precise comparison
+        dateToday.setHours(0, 0, 0, 0);
+        // Set the time of dateInput to midnight for precise comparison
+        dateInput.setHours(0, 0, 0, 0);
+
+        if(!date || !time){
+            alert("input both date and time")
+        }
+        else if(dateInput < dateToday){ // Compare if the chosen timeslot and date is yesterday or earlier
+            alert("Date is already in the past")
+        }
+        else{ //if picked valid date and time
+            document.getElementById('pick-date').classList.add("hidden")//hide date picker tab
+
+            document.getElementById('pick-service').classList.remove("hidden")//open service picker tag
+            document.getElementById('pick-service').classList.add("flex")
+
+            document.getElementById('booking-details').classList.remove("hidden")//add selected date and time to appointment tab
+            document.getElementById('booking-details').classList.add("flex")
+            document.getElementById('date-time-value').innerHTML = convertStringToDate(`${date} | ${time}`)
+
+            document.getElementById('date-input').value = date //assign selected time and date to form inputs
+            document.getElementById('time-input').value = time
+        }
+        
+    }
+    function selectService(id){ //SERVICE SELECTION FUNCTION (puts the selected service on the booking details(right-side))
+        //assign picked ID to service input
+        document.getElementById('service-input').value = id.split("-")[1]
+        //logic for selecting services
+        document.getElementById(id).classList.remove("bg-[#F5F5F5]")
+        document.getElementById(id).classList.add("bg-[#00AEEF]")
+        document.getElementById(id).classList.add("text-white")
+        let servicesData = document.getElementsByClassName("servicesData")
+        for(service of servicesData){
+            if(service.id !== id){
+                service.classList.remove("bg-[#00AEEF]")
+                service.classList.remove("text-white")
+                service.classList.add("bg-[#F5F5F5]")
+                document.getElementById("service-value").innerHTML = document.getElementById(`servicename-${id.split("-")[1]}`).innerHTML
+
+            }
+        }
+    }
+    function selectLocation(id){ //LOCATION SELECTION FUNCTION (puts the selected location on the booking details(right-side))
+        //assign picked ID to location input
+        document.getElementById('location-input').value = id.split("-")[1]
+        //logic for selecting location
+        document.getElementById(id).classList.remove("bg-[#F5F5F5]")
+        document.getElementById(id).classList.add("bg-[#00AEEF]")
+        document.getElementById(id).classList.add("text-white")
+        let locationsData = document.getElementsByClassName("locationsData")
+        for(loc of locationsData){
+            if(loc.id !== id){
+                loc.classList.remove("bg-[#00AEEF]")
+                loc.classList.remove("text-white")
+                loc.classList.add("bg-[#F5F5F5]")
+                document.getElementById("location-value").innerHTML = document.getElementById(`locationname-${id.split("-")[1]}`).innerHTML
+            }
+        }
+    }
+    function setBooking(){ //SUBMITTING THE BOOKING FORM AND SAVING IT INTO THE DATABASE
+        let bookingForm = document.getElementById('booking-form')
+        let serviceInput = document.getElementById("service-input").value
+        let locationInput = document.getElementById("location-input").value
+        if(!serviceInput || !locationInput){
+            alert("Please complete the form before submitting")
+        }
+        else{
+            bookingForm.submit()
+        }
+        
+    }
+</script>
+{% endblock %}

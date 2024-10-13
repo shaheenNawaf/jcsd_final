@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-full h-full">
+    <div class="w-full h-full bg-white z-20">
+        <div class="w-[95%] m-auto h-full flex flex-row gap-[20px] mt-6" id="inventory-table">
+            <div class="w-[30%] h-auto Montserrat">
+                <div class="w-full rounded-[5px] p-5 flex flex-col border-2 ">
+                    <span class="text-[20px]">Search</span>
+                    <input type="text" class="rounded-[6px] h-[40px] mt-2" placeholder="search by id, name, type, supplier" id="search-input" onkeyup="searchInventory()"/>
+                    <button class="h-[40px] w-[80px] bg-[#00AEEF] text-white rounded-[6px] mt-4 text-[16px] transition-auto hover:text-[17px]">Search</button>
+                </div>
+                <form 
+                method="POST" 
+                class="w-full rounded-[5px] p-5 flex flex-col border-2 mt-8"
+                action="">{% csrf_token %} 
+                    <span class="text-[20px]">Inventory Form</span>
+                    <div class=" mt-4 flex flex-col">
+                        <span class="text-[17px]">Item Name</span> 
+                        <input type="text" class="rounded-[6px] h-[40px] mt-2" placeholder="Enter item name "  name="itemName" required/>
+                    </div>
+                    <div class=" mt-4 flex flex-col">
+                        <span class="text-[17px]">Supplier</span>
+                        <div class="flex flex-row mt-2 gap-[10px]">
+                            <select class="rounded-[6px] h-[40px] w-[60%]" name="supplier" required>
+                                <option></option>
+                                {% for supplier in supplierData %}
+                                <option value="{{supplier.id}}">{{ supplier.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <a href="{% url 'supplier' %}"><button type="button" class="h-[40px] w-[140px] bg-[#00AEEF] text-white rounded-[6px] text-[16px] transition-auto hover:text-[17px]">Add Supplier</button></a>
+                        </div>
+                    </div>
+                    <div class=" mt-4 flex flex-col">
+                        <span class="text-[17px]">Item Type</span>
+                        <select class="rounded-[6px] h-[40px] mt-2"  name="itemType" required>
+                            <option></option>
+                            <option value="Hardware">Hardware</option>
+                            <option value="Software">Software</option>
+                        </select>
+                    </div>
+                    <div class=" mt-4 flex flex-col">
+                        <span class="text-[17px]">Quantity</span>
+                        <input min="1"step="1"  type="number" class="rounded-[6px] h-[40px] mt-2" placeholder="0-99 " name="quan" required/>
+                    </div>
+                    <div class=" mt-4 flex flex-col">
+                        <span class="text-[17px]">Price</span>
+                        <input type="number" class="rounded-[6px] h-[40px] mt-2" placeholder="Enter item price " name="price" required/>
+                    </div>
+                    <button type="submit" class="h-[40px] w-[80px] bg-[#00AEEF] text-white rounded-[6px] mt-6 text-[16px] transition-auto hover:text-[17px]">Submit</button>
+                </form>
+
+            </div>
+            <div class="w-[70%] h-[950px] rounded-[6px] border-2">
+                <div class="w-full bg-[#00AEEF] text-white Montserrat grid grid-cols-7 text-center text-[18px] py-2">
+                    <span>Item ID</span>
+                    <span>Item Name</span>
+                    <span>Item Type</span>
+                    <span>Supplier</span>
+                    <span>Quantity</span>
+                    <span>Price</span>
+                    <span>Edit/Delete</span>
+                </div>
+                <div class="overflow-auto h-[890px]">
+                    {% for item in inventoryData %}
+                    <div class="w-full  text-black Montserrat grid grid-cols-7 gap-[10px] text-left text-[16px] py-4 px-2">
+                        <span id="item-id-{{item.id}}">{{ item.id }}</span>
+                        <span id="item-name-{{item.id}}">{{ item.itemName }}</span>
+                        <span id="item-type-{{item.id}}">{{ item.itemType }}</span>
+                        <span id="item-supplier-{{item.id}}">{{ item.supplierId }}</span>
+                        <span id="item-quantity-{{item.id}}">{{ item.quantity }}</span>
+                        <span id="item-price-{{item.id}}">Php. {{ item.price }}0</span>
+                        <span class="flex flex-row gap-[15px] justify-center text-[#00AEEF] text-lg"> 
+                            <i onclick="openEditForm('{{item.id}}')" class="fa-solid fa-pen-to-square cursor-pointer"></i>
+                            <!-- <a href="{% url 'delete-item' item.id %}"><i class="fa-solid fa-trash-can cursor-pointer"></i></a> -->
+                            <i onclick="confirmModalInventory('{{item.id}}')" class="fa-solid fa-trash-can cursor-pointer"></i>
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="w-[40%] m-auto hidden" id="item-edit-form">
+            <form 
+            method="POST" 
+            class="w-full rounded-[5px] p-5 flex flex-col border-2 mt-8"
+            action="{% url 'edit-item' %}">{% csrf_token %} 
+                <span class="text-[20px]">Item Edit Form</span>
+                <div class=" mt-4 flex flex-col">
+                    <span class="text-[17px]">Item Name</span> 
+                    <input class="hidden" name="item_id" id="item_id"/>
+                    <input type="text" class="rounded-[6px] h-[40px] mt-2" name="itemName" id="itemName" required/>
+                </div>
+                <div class=" mt-4 flex flex-col">
+                    <span class="text-[17px]">Supplier</span>
+                    <div class="flex flex-row mt-2 gap-[10px]">
+                        <select class="rounded-[6px] h-[40px] w-[60%]" name="supplierId" id="supplier" required>
+                            <option></option>
+                            {% for supplier in supplierData %}
+                            <option id="supplier-name" class="{{supplier.id}}" value="{{supplier}}">{{ supplier }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class=" mt-4 flex flex-col">
+                    <span class="text-[17px]">Item Type</span>
+                    <select class="rounded-[6px] h-[40px] mt-2"  name="itemType" id="itemType" required>
+                        <option></option>
+                        <option value="Hardware">Hardware</option>
+                        <option value="Software">Software</option>
+                    </select>
+                </div>
+                <div class=" mt-4 flex flex-col">
+                    <span class="text-[17px]">Quantity</span>
+                    <input min="1"step="1"  type="number" class="rounded-[6px] h-[40px] mt-2" name="quan" id="quan" required/>
+                </div>
+                <div class=" mt-4 flex flex-col">
+                    <span class="text-[17px]">Price</span>
+                    <input type="number" class="rounded-[6px] h-[40px] mt-2" name="price" id="price" required/>
+                </div>
+                <button type="submit" class="h-[40px] w-[80px] bg-[#00AEEF] text-white rounded-[6px] mt-6 text-[16px] transition-auto hover:text-[17px]">Save</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% for item in inventoryData %}
+<div id="confirm-modal-{{ item.id }}" class="hidden h-full pt-[18%] xl:pt-[10%] w-full fixed z-30 overflow-auto left-[0] top-[0] bg-[rgb(0,0,0)] bg-[rgba(0,0,0,0.4)]">
+    <div class="w-[280px] xl:w-[400px] p-5 m-auto bg-white">
+        <div id="withdraw-confirmation" class="Montserrat "> <!--MODAL FOR WITHDRAWAL CONFIRMATION -->
+            <div class="flex flex-row">
+                <button onclick="RemoveModalInventory('{{ item.id }}')" class="count-2 ml-auto mt-2 mr-2"><b>&#10005;</b></button>
+            </div>
+            <div class="w-[100%] m-auto text-center p-5 xl:p-10 ">
+                <p class="font-[500] text-[18px] xl:text-[20px] 2xl:text-[24px]">Are you sure you want to Delete this item? <b>This action is irreversible</b></p>
+            </div>
+            <div class="flex flex-row text-[16px] justify-center">
+                <button onclick="RemoveModalInventory('{{ item.id }}')" class="border-0  px-[3rem] py-[.40rem] font-[500] text-primary">No</button>
+                <a href="{% url 'delete-item' item.id %}"><button onclick="" class="ml-2 border-0 bg-[#00AEEF] px-[3rem] py-[.40rem] font-[500] text-white">Yes</button></a>
+            </div><br>
+        </div>
+    </div>
+</div>
+{% endfor %}
+<script>
+    function openEditForm(itemId){
+        let editForm = document.getElementById('item-edit-form')
+        let inventoryTable = document.getElementById('inventory-table')
+        editForm.classList.remove("hidden")
+        editForm.classList.add("flex")
+        inventoryTable.classList.add("hidden")
+        inventoryTable.classList.remove("flex")
+        document.getElementById("item_id").value = itemId
+        document.getElementById("price").value = document.getElementById(`item-price-${itemId}`).innerHTML.split(" ")[1].split(".")[0]
+        document.getElementById("quan").value = document.getElementById(`item-quantity-${itemId}`).innerHTML
+        document.getElementById("itemType").value = document.getElementById(`item-type-${itemId}`).innerHTML
+        document.getElementById("supplier").value = document.getElementById(`item-supplier-${itemId}`).innerHTML
+        document.getElementById("itemName").value = document.getElementById(`item-name-${itemId}`).innerHTML
+        document.getElementById("supplierId").value = document.getElementById(`supplier-id-${itemId}`).innerHTML
+    }
+    function confirmModalInventory(itemId){
+        document.getElementById(`confirm-modal-${itemId}`).classList.remove('hidden')
+    }
+    function RemoveModalInventory(itemId){
+        document.getElementById(`confirm-modal-${itemId}`).classList.add('hidden')
+    }
+</script>
+<script>
+    function searchInventory() {
+        var input, filter, grid, items, spans, span, i, txtValue;
+        input = document.getElementById('search-input');
+        filter = input.value.toUpperCase();
+        grid = document.querySelector('.overflow-auto');
+
+        items = grid.getElementsByClassName('grid-cols-7');
+
+        for (i = 0; i < items.length; i++) {
+            spans = items[i].getElementsByTagName('span');
+            for (var j = 0; j < 4; j++) {  // Assuming you want to search in the second and third spans (Item Name and Item Type)
+                span = spans[j];
+                if (span) {
+                    txtValue = span.textContent || span.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        items[i].style.display = '';
+                        break;  // Exit the inner loop if a match is found
+                    } else {
+                        items[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

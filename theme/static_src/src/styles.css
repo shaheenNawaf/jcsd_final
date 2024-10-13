@@ -1,0 +1,197 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.home-bg{
+    background-image: url("../../images/home-bg.png");
+    background-position: 0px -900px; 
+}
+
+@font-face {
+    font-family: Montserrat;
+    src: url('../../fonts/Montserrat-Regular.ttf');
+  }
+
+.Montserrat{
+    font-family: Montserrat;
+}
+
+.transition-auto{
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+    transition-duration: 150ms;
+    cursor: pointer;
+}
+
+.auto-align-middle-row{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    vertical-align: middle;
+    align-items: center;
+}
+
+.auto-align-middle-col{
+    display: flex;
+    flex-direction: col;
+    justify-content: center;
+    vertical-align: middle;
+    align-items: center;
+}
+
+.login-form input[type=text], input[type=password], input[type=date], input[type=month], .login-submit-btn{
+    border-radius: 5px;
+    width: 100%;
+    height: 59px;
+}
+
+.login-submit-btn{
+    background-color: #00AEEF;
+    color: white;
+    margin-top: 10px;
+}
+
+.reg-submit-btn{
+    background-color: #00AEEF;
+    color: white;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: 1px solid gray;
+    height: 59px;
+    width: 423px;
+}
+
+
+.time-slot{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.time-slot{
+    padding-top: 25px;
+    padding-bottom: 25px;
+    cursor: pointer;
+    border-radius: 8px;
+    
+}
+
+.time-slot:hover{
+    background-color: #00AEEF;
+    color: white;
+}
+
+.time-slot-inactive{
+    color: #B5B5B5;
+    pointer-events: none;
+    padding-top: 25px;
+    padding-bottom: 25px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.time-slot-active{
+    background-color: #00AEEF;
+    color: white;
+}
+
+.date-count{
+    font-weight: bold;
+    margin-top: 100px;
+}
+
+.calendar-admin{
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.date-row-admin{
+    display: flex;
+    flex-direction: column;
+
+}
+.date-count-admin{
+    background-color: #00AEEF;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    color: white;
+    font-size: 18px;
+   
+}
+.time-slot-admin{
+    border: 1px solid #00AEEF;
+    min-height: 190px;
+}
+
+/*
+.booking-table{
+    background-color: #D9D9D9;
+    padding: 8px;
+    border-left: 2px solid black;
+    border-right: 2px solid black;
+}
+
+.booking-table:nth-child(even){
+    background-color: #FAFAFA;
+    padding: 8px;
+    border-left: 2px solid black;
+    border-right: 2px solid black;
+}
+ */
+
+.booking-table{
+    border: 2px solid black
+}
+
+.booking-table th{
+    background-color: #D9D9D9;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 10px;
+    padding-left: 10px;
+}
+
+.booking-table td{
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 10px;
+    padding-left: 10px;
+}
+
+.booking-table tr{
+    background-color: #D9D9D9;
+}
+.booking-table tr:nth-child(odd){
+    background-color: #FAFAFA;
+}
+
+table {
+    border-collapse: collapse;
+  }
+table td {
+    border-left: 2px solid black;
+}
+table th {
+    border: 2px solid black;
+}
+table tr:first-child th {
+    border-top: 0;
+}
+table tr:last-child td {
+    border-bottom: 0;
+}
+table tr td:first-child,
+table tr th:first-child {
+    border-left: 0;
+}
+table tr td:last-child,
+table tr th:last-child {
+    border-right: 0;
+}
+
+
+
+

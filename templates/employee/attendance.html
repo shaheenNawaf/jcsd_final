@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-full h-full">
+    <div class="w-full h-full mt-36 bg-white z-20">
+        <div class="flex flex-row w-[85%] m-auto "> 
+            <div class="w-[335px] ">
+                <div class="h-[190px] w-[190px] bg-white rounded-[50%] mt-[-90px]">
+                    <img src="{% static 'images/avatar.svg' %}" alt="default pfp"/>
+                </div>
+                <div class="flex flex-col Montserrat text-[24px] gap-[10px] mt-6">
+                    <a href="{% url 'profile' %}"><span class="transition-auto hover:text-[26px] ">Profile</span></a>
+                    {% if user.is_staff %} 
+                    <a href="{% url 'emp-attendance' %}"><span class="transition-auto hover:text-[26px] font-bold">Attendance</span></a>
+                    <a href="{% url 'emp-payslip' %}"><span class="transition-auto hover:text-[26px]">Payslip</span></a>
+                    {% else %}
+                    <a href="{% url 'user-bookings' %}"><span class="transition-auto hover:text-[26px]">Bookings</span></a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="transition-auto hover:text-[26px]">Logout</a>
+                </div>
+            </div>
+            <div class="w-full mt-8 Montserrat">
+                <span class="text-[36px] ">{{ profileData.profileId.firstName }} {{ profileData.profileId.MiddleName }} {{ profileData.profileId.lastName }}</span>
+                <hr class="mt-3"/>
+                <div class="w-full h-auto grid-cols-1 grid gap-[10px]" id="attendance-list">
+                    <div class="flex flex-col  ">
+                        <span class="text-[#B6B6B6] text-[20px] mt-3">Feed</span>
+                        <div class="overflow-y-auto max-h-[550px]">
+                            {% for attendance in attendanceData %}
+                            <div class="w-full py-[10px] px-[16px] bg-[#EFEFEF] mt-3">
+                                <div class="flex flex-row text-[20px]">
+                                    <i class="fa-regular fa-clock mt-1 mr-2  {% if attendance.signInType == 'IN' %} text-green-500 {% else %} text-red-500 {% endif %}"></i>
+                                    <span>{{ attendance.signInType }} at <b class="attendace-date">{{ attendance.date }}</b></span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="flex flex-col mt-6">
+                        <div class="flex flex-row">
+                            <span class="text-[#B6B6B6] text-[20px] mt-3">Leave Requests</span>
+                            <button class="mt-2 ml-auto h-[35px] w-[200px] rounded-[8px] text-white bg-[#00AEEF] text-[16px] transition-auto hover:text-[17px]"
+                            onclick="openLeaveForm()">Request for leave</button>
+                        </div>
+                        <div class="overflow-y-auto h-[550px]">
+                            {% for leave in leaveData %}
+                            <div class="w-full py-[10px] px-[16px] bg-[#EFEFEF] mt-3">
+                                <div class="flex flex-row text-[20px]">
+                                    <i class="fa-solid fa-circle-left mt-1 mr-2"></i>
+                                    <span>{{ leave.leaveType }} at <b class="leave-date">{{ leave.dateFrom }}</b> to <b class="leave-date">{{ leave.dateTo }}</b></span>
+                                    <span class="ml-auto leave-status font-bold">{{ leave.status }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="hidden flex-col" id="leave-form">
+                    <span class="text-[22px] mt-5 font-bold">Request for leave</span>
+                    <form class="mt-2 login-form" method="POST" onsubmit="return validateForm()"> {% csrf_token %} 
+                        <div class="grid grid-cols-3 gap-[30px] mt-6">
+                            <div class="flex flex-col">
+                                <label><b>Leave Type</b></label>
+                                <input type="text" class="w-[400px]" name="leaveType" required/>
+                            </div>
+                            <div class="flex flex-col">
+                                <label><b>Date from</b></label>
+                                <input type="date" name="dateFrom" id="dateFrom" required/>
+                            </div>
+                            <div class="flex flex-col">
+                                <label><b>Date to</b></label>
+                                <input type="date" name="dateTo" id="dateTo" required/>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex flex-col">
+                            <label><b>Note</b></label>
+                            <textarea class="rounded-[8px] h-[150px]" name="note" required></textarea>
+                        </div>
+                        <div class="flex flex-row mt-6 ">
+                            <button class="flex flex-row gap-[5px]  text-[18px] hover:gap-[8px] transition-auto"
+                            onclick="closeLeaveForm()" type="button">
+                                <i class="fa-solid fa-arrow-left mt-1"></i>
+                                Back</button>
+                            <button class="ml-auto  h-[35px] w-[120px] rounded-[8px] text-white bg-[#00AEEF] text-[18px] transition-auto hover:text-[19px]">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let leaveText = document.getElementsByClassName("leave-status")
+    for(text of leaveText){
+        if(text.innerHTML === "Rejected"){
+            text.classList.add("text-red-500")
+        }
+        else if(text.innerHTML === "Approved"){
+            text.classList.add("text-green-500")
+        }
+    }
+</script>
+<script>
+    function openLeaveForm(){
+        let form = document.getElementById("leave-form")
+        let div = document.getElementById("attendance-list")
+        div.classList.add("hidden")
+        div.classList.remove("grid")
+
+        form.classList.remove("hidden")
+        form.classList.add("flex")
+    }
+    function closeLeaveForm(){
+        let form = document.getElementById("leave-form")
+        let div = document.getElementById("attendance-list")
+        div.classList.remove("hidden")
+        div.classList.add("grid")
+
+        form.classList.add("hidden")
+        form.classList.remove("flex")
+    }
+    function validateForm(){
+        let dateFrom = document.getElementById('dateFrom').value
+        let dateTo = document.getElementById('dateTo').value
+        if(dateFrom > dateTo){
+            alert("Please select the right date from and date to dates")
+            return false
+        }
+        return true
+    }
+</script>
+<script>
+    function convertStringToDate(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString;
+        var dateParts = parts.split('-');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[1], 10) - 1];
+        var day = parseInt(dateParts[2], 10);
+        var year = parseInt(dateParts[0], 10);
+        return `${month} ${day}, ${year}`;
+        //return parts
+    }
+    function convertStringToDate2(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString;
+        var dateParts = parts.split('/');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[1], 10) - 1];
+        var day = parseInt(dateParts[0], 10);
+        var year = parseInt(dateParts[2], 10);
+        return `${month} ${day}, ${year}`;
+        //return parts
+    }
+    let leaveRequests = document.getElementsByClassName("leave-date")
+    for(request of leaveRequests){
+        request.innerHTML = convertStringToDate(request.innerHTML)
+    }
+
+    let attendanceDates = document.getElementsByClassName("attendace-date")
+    for(dates of attendanceDates){
+        dates.innerHTML = `${convertStringToDate2(dates.innerHTML.split(" ")[0])} - ${dates.innerHTML.split(" ")[1]} `
+    }
+    
+</script>
+{% endblock %}

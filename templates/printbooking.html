@@ -1,0 +1,92 @@
+{% extends "printbase.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-[100%] m-auto">
+    <div class="mt-16 w-[1125px] h-[1030px] z-20 bg-white m-auto rounded-[10px]">
+        <div class="flex-col w-[100%] h-full m-auto Montserrat mt-10" id="booking-receipt">
+            <span class="text-[18px] font-bold">Receipt</span>
+            <div class="text-[14px] ml-6">
+                <div class="mt-6 flex flex-row gap-[10px]">
+                    <span>Booking ID:</span>
+                    <span>{{ bookingDetails.id }}</span>
+                </div>
+                <div class="mt-2 flex flex-row gap-[10px]">
+                    <span>Date:</span>
+                    <span id="booking-date">{{ bookingDetails.date }} | {{ bookingDetails.time }}</span>
+                </div>
+                <div class="mt-6  flex flex-row gap-[10px]">
+                    <span>Purok 4 Block 3 <br/>
+                        Panacan Relocation <br/>
+                        8000 Davao City, Philippines <br/>
+                        0976 074 7797 <br/>
+                        JCSD
+                    </span>
+                </div>
+                
+                <table class="w-[95%] booking-table mt-4">
+                    <thead>
+                        <th class="text-left w-[60%]">Description</th>
+                        <th class="text-center w-[20%]">Quantity</th>
+                        <th class="text-center w-[20%]">Amount</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><b>Subtotal</b></td>
+                            <td>9</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><b>Additional Fee</b></td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><b>Total</b></td>
+                            <td>12</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+    </div>
+</div>
+<script>
+    window.print()
+    function convertStringToDate(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString.split(' | ');
+        var dateParts = parts[0].split('-');
+        var timeParts = parts[1].split(':');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[0], 10) - 1];
+        var day = parseInt(dateParts[1], 10);
+        var year = parseInt(dateParts[2], 10);
+        var hour = parseInt(timeParts[0], 10);
+        var minute = parseInt(timeParts[1], 10);
+        var period = hour >= 12 ? 'pm' : 'am';
+        if (hour > 12) {
+            hour = hour - 12;
+        }
+        return `${month} ${day}, ${year}, ${hour}:${minute.toString().padStart(2, '0')} ${period}`;
+    }
+    var bookingDate = document.getElementById("booking-date")
+    bookingDate.innerHTML = convertStringToDate(bookingDate.innerHTML)
+</script>
+
+{% endblock %}

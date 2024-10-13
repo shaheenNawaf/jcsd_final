@@ -1,0 +1,170 @@
+{% extends "../base.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-[90%] m-auto">
+    <div class="mt-16 w-[1125px] h-[1030px] z-20 bg-white m-auto rounded-[10px]">
+        <div class="flex flex-col w-[90%] h-full m-auto Montserrat mt-10"> 
+            <span class="text-[25px]">Welcome!</span>
+            <span class="text-[30px] font-[600] mt-6">Sign Up to</span>
+            <span class="text-[25px]"> JCSD</span>
+            <form id="sign-up-form" class="login-form mt-8" method="POST" onsubmit="return validateData();" action="{% url 'create-account' %}"> {% csrf_token %}
+                <div class="grid grid-cols-2 gap-[30px] ">
+                    <div class="flex flex-col gap-[10px]">
+                        <div>
+                            <span>Username</span>
+                            <span class="ml-1 text-[12px] mt-[-2px] text-red-500" id="username-error"></span>
+                        </div>
+                        <input type="text" name="username" id="username-field" required/>
+
+                        <div>
+                            <span>Password</span>
+                            <span class="ml-1 text-[12px] mt-[-2px] text-red-500" id="pass1-error"></span>
+                        </div>
+                        <input type="password" name="password" id="pass1" required/>
+                        
+                        <div>
+                            <span>Confirm Password</span>
+                            <span class="ml-1 text-[12px] mt-[-2px] text-red-500" id="pass2-error"></span>
+                        </div>
+                        <input type="password" id="pass2" required/>
+                        
+                        <span>First Name</span>
+                        <input type="text" name="firstName" required/>
+                        <span>Middle Name</span>
+                        <input type="text" name="middleName" required/>
+                        <span>Last Name</span>
+                        <input type="text" name="lastName" required/>
+                    </div>
+                    <div class="flex flex-col gap-[10px]">
+                        <span>Birthday</span>
+                        <input type="date" name="bday" required/>
+                        <div>
+                            <span>Contact Number</span>
+                            <span class="ml-1 text-[12px] mt-[-2px] text-red-500" id="phone-num-error"></span>
+                        </div>
+                        <input id="phone-num-field" type="text" name="contactNumber" required/>
+
+
+                        <div>
+                            <span>Email</span>
+                            <span class="ml-1 text-[12px] mt-[-2px] text-red-500" id="email-error"></span>
+                        </div>
+                        <input type="text" name="email" id="email-field" required/>
+
+                        <span>Address</span>
+                        <input type="text" name="address" required/>
+                        <div class="grid grid-cols-2 gap-[20px]  mt-[10px]">
+                            <div>
+                                <span>City</span>
+                                <input type="text" name="city" required/>
+                            </div>
+                            <div>
+                                <span>Provice</span>
+                                <input type="text" name="province" required/>
+                            </div>
+                            <div>
+                                <span>Country</span>
+                                <input type="text" name="country" required/>
+                            </div>
+                            <div>
+                                <span>Zip Code</span>
+                                <input type="text" name="zipCode" required/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="m-auto mt-8 flex flex-col text-center">
+                    <button type="submit" class="m-auto reg-submit-btn transition-auto hover:text-[18px]">
+                        Register
+                    </button>
+                    <span class="text-[#7D7D7D] mt-2">Already have an Account? 
+                    <a class="text-[#00AEEF] transition-auto hover:text-[18px]" href="{% url 'login' %}">Login</a></span>
+                </div>
+            </form>
+            <div class="hidden">
+                {% for user in users %} 
+                    <p class="user_emails">{{user.email}}</p>
+                    <p class="user_usernames">{{user.username}}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function validateData(){
+        pass = validatePassword()
+        user = checkUsername()
+        phone = checkPhoneNum()
+        email = checkEmail()
+        if (!pass || !user || !email || !phone ){
+            return false
+        }
+        return true
+    }
+    
+    function validatePassword(){
+        let value = false
+        let pass1 = document.getElementById('pass1').value
+        let pass2 = document.getElementById('pass2').value
+        if (pass1 === pass2){
+            document.getElementById('pass1').classList.remove("border-red-500")
+            document.getElementById('pass2').classList.remove("border-red-500")
+            document.getElementById('pass1-error').innerHTML = ""
+            document.getElementById('pass2-error').innerHTML = ""
+            return true
+        }
+        document.getElementById('pass1').classList.add("border-red-500")
+        document.getElementById('pass2').classList.add("border-red-500")
+        document.getElementById('pass1-error').innerHTML = "Passwords must match"
+        document.getElementById('pass2-error').innerHTML = "Passwords must match"
+        return false
+    }
+    
+    function checkEmail(){
+        let user_email = document.getElementById('email-field').value
+        const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user_email);
+        if (!isValidEmail){
+            document.getElementById('email-field').classList.add("border-red-500")
+            document.getElementById('email-error').innerHTML = "Must enter a valid email address"
+            return false
+        }
+        else{
+            document.getElementById('email-field').classList.remove("border-red-500")
+            document.getElementById('email-error').innerHTML = ""
+            return true
+        }
+    }
+
+    function checkUsername(){
+        let usernames = document.getElementsByClassName('user_usernames') //existing usernames
+        let user_username = document.getElementById('username-field').value //username input
+        for (user of usernames){
+            if (user.innerHTML.toLowerCase() === user_username.toLowerCase()){
+                document.getElementById('username-field').classList.add("border-red-500")
+                document.getElementById('username-error').innerHTML = "Username already Exists"
+                return false
+            }
+        }
+        document.getElementById('username-field').classList.remove("border-red-500")
+        document.getElementById('username-error').innerHTML = ""
+        return true
+    }
+
+    function checkPhoneNum(){
+        let phoneNum = document.getElementById('phone-num-field').value
+        const isValidPhone = /^(09|\+639)\d{9}$/.test(phoneNum);
+
+        if (!isValidPhone){
+            document.getElementById('phone-num-field').classList.add("border-red-500")
+            document.getElementById('phone-num-error').innerHTML = "Must enter a valid Phone Number"
+            return false
+        }
+        else{
+            document.getElementById('phone-num-field').classList.remove("border-red-500")
+            document.getElementById('phone-num-error').innerHTML = ""
+            return true
+        }
+    }
+
+</script>
+{% endblock %}

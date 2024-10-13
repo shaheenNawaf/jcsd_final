@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-full m-auto h-full">
+    <div class="flex  text-black z-20 w-full  bg-white h-full border-t-black border-[1px]">
+        <!-- APPOINTMENT PICKER -->
+        <p class="hidden" id="date-today-ref"></p>
+        <div class="w-[95%] m-auto flex flex-col  mt-6 Montserrat pb-10" id="pick-date">
+            <div class="hidden">
+            {% for booking in bookingsData %}
+                <p class="booking-reservation" id="{{ booking.date }}/{{ booking.time }}">
+                    {{ booking.date }}||{{ booking.time }}||{{ booking.serviceId.serviceName }}||{{ booking.locationId.location }}||{{ booking.status }}||{{ booking.assignedEmployee }}||{{ booking.id }}
+                </p>
+            {% endfor %}
+            </div>
+            <div class="flex flex-row m-auto w-[40%] gap-[40px] justify-center items-center text-[24px]">
+                <i class="fa-solid fa-angle-left mt-[6px] cursor-pointer hover:text-[#00AEEF]"
+                onclick="prevPageDate()"></i>
+                <span class="" id="date-today"></span>
+                <i class="fa-solid fa-angle-right mt-[6px] cursor-pointer hover:text-[#00AEEF]"
+                onclick="nextPageDate()"></i>
+            </div>
+            <div class="border-2 w-full mt-6  text-center">
+                <div id="list-of-days" class="calendar-admin">
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <!-- BOOKING DETAILS -->
+    
+</div>
+
+
+<script>
+    function convertStringToDate(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString.split(' | ');
+        var dateParts = parts[0].split('-');
+        var timeParts = parts[1].split(':');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[0], 10) - 1];
+        var day = parseInt(dateParts[1], 10);
+        var year = parseInt(dateParts[2], 10);
+        var hour = parseInt(timeParts[0], 10);
+        var minute = parseInt(timeParts[1], 10);
+        var period = hour >= 12 ? 'pm' : 'am';
+        if (hour > 12) {
+            hour = hour - 12;
+        }
+        return `${month} ${day}, ${year}, ${hour}:${minute.toString().padStart(2, '0')} ${period}`;
+    }
+</script>
+<script>
+    function getTime(time){
+        if(time === "2:00"){
+            return "p.m"
+        }
+        else if(time === "1:00"){
+            return "p.m"
+        }
+        else{
+            return "a.m"
+        }
+    }
+    function setAppointmentStatus(status){
+        if(status === "Pending confirmation"){
+            return "bg-red-50"
+        }
+        else{
+            return "bg-[#00AEEF] text-white"
+        }
+    }
+</script>
+<script>
+    function addReservedSlots(){
+        
+        let bookingReservations = document.getElementsByClassName("booking-reservation")
+        let timeSlots = document.getElementsByClassName("time-slot-admin") 
+        for(reservedSlot of bookingReservations){
+            for(slot of timeSlots){
+                if(reservedSlot.id === slot.id.split(" ")[0]){ //reservedSlot.innerHTML
+                    data = reservedSlot.innerHTML.split("||")
+                    slot.innerHTML =`
+                    <a href="view/${data[6]}"> 
+                        <div class="p-2 text-left h-full flex flex-col ${setAppointmentStatus(data[4])}">
+                            <span class="font-bold">${data[1]} ${getTime(data[1])}</span>
+                            <span><b>Service: </b>${data[2]}</span>
+                            <span><b>Location: </b>${data[3]}</span>
+                            <span><b>Assigned: </b>${data[5].split(" - ")[1] ? data[5].split(" - ")[1] : "N/A (click to set)"}</span>
+                        </div>
+                    </a>`
+                }
+            }
+        }
+    }
+</script>
+<script>
+    function getDay(dateString){
+        var dateParts = dateString.split('-');
+
+        // Create a new Date object (months are zero-based, so subtract 1 from the month)
+        var dateObject = new Date(dateParts[2], dateParts[0] - 1, dateParts[1]);
+
+        // Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+        var dayOfWeek = dateObject.getDay();
+
+        // Array of weekday names
+        var weekdays = ["Sun.", "Mon.", "Tues.", "Wed.", "Thurs.", "Fri.", "Sat."];
+
+        // Get the day name
+        return weekdays[dayOfWeek];
+    }
+</script>
+<script>
+    function generateCalendar(){ //GENERATE CALENDAR FUNCTION
+        //var originalDate = new Date(Date(Date.now())); //get date today
+        var dateToday = new Date(document.getElementById('date-today').innerHTML)
+        console.log("Generate", dateToday)
+        var originalDate = dateToday; // USE DYNAMIC DATE FUNCTION
+        var sevenDaysLater = new Date(originalDate.getTime() + (6 * 24 * 60 * 60 * 1000)); //get date 7 days from now
+        var formattedOriginalDate = originalDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); //date formatting
+        var formattedSevenDaysLater = sevenDaysLater.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); //date formatting
+        var datesArray = []; //array of dates from 7 days ex: [30, 31, 1, 2, 3, ...]
+
+        for (var date = originalDate; date <= sevenDaysLater; date.setDate(date.getDate() + 1)) { //LOOPS THE DATE FROM AND DATE TO
+            datesArray.push(`${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`); //push the dates to the array
+        }
+
+        document.getElementById('date-today').innerHTML = `${formattedOriginalDate} - ${formattedSevenDaysLater}` // show the date range of 7 days from today ex: Oct. 31 - Nov. 5, 2023
+
+        var listOfDays = document.getElementById('list-of-days');
+        var timeSlotArray = ["8:00 a.m", "9:00 a.m", "10:00 a.m", "11:00 a.m","1:00 p.m", "2:00 p.m"] // Time slots array
+
+        for (var i = 0; i < datesArray.length; i++) {
+            var dateRow = document.createElement('div'); //ADDS A DIV THAT CONTAINS THE DATE AS HEADER
+            dateRow.classList.add('date-row-admin');
+            dateRow.id = "date-row"
+            var dateCount = document.createElement('span'); //Adds id's and class names to track the date for database saving
+            dateCount.id = `date-count-${datesArray[i]}`;
+            dateCount.classList.add("date-count-admin")
+            dateCount.innerHTML = `${getDay(datesArray[i])} ${datesArray[i].split("-")[1]}` ;
+            dateRow.appendChild(dateCount);
+            listOfDays.appendChild(dateRow);
+            
+            for(slot of timeSlotArray){  //CREATES DIV FOR TIMESLOTS
+                var timeSlots = document.createElement('span')
+                timeSlots.classList.add("time-slot-admin") //ADDING ID'S and CLASSNAMES TO TRACK THE TIMESLOTS
+                timeSlots.id = `${datesArray[i]}/${slot}`
+                timeSlots.innerHTML = `
+                <div class="p-2 text-left h-full">
+                    <span class="font-bold">${slot}</span>
+                </div>
+                `
+                dateRow.appendChild(timeSlots)
+            }
+        }
+    }
+</script>
+<script>
+    function nextPageDate(){
+        const dateElement = document.getElementById("list-of-days");
+        dateElement.innerHTML = ""
+        var originalDate = new Date(document.getElementById('date-today').innerHTML.split(" - ")[0]); // USE DYNAMIC DATE FUNCTION
+        console.log('orig', originalDate)
+        var sevenDaysLater = new Date(originalDate.getTime() + (6 * 24 * 60 * 60 * 1000));
+        document.getElementById('date-today').innerHTML = sevenDaysLater //give new date to time range
+        console.log('after', document.getElementById('date-today').innerHTML)
+        generateCalendar() //generate new calendar based on new date
+        addReservedSlots()
+    }
+    function prevPageDate(){
+        const dateElement = document.getElementById("list-of-days");
+        dateElement.innerHTML = ""
+        var originalDate = new Date(document.getElementById('date-today').innerHTML.split(" - ")[0]); // USE DYNAMIC DATE FUNCTION
+        console.log('orig', originalDate)
+        var sevenDaysLater = new Date(originalDate.getTime() - (6 * 24 * 60 * 60 * 1000));
+        document.getElementById('date-today').innerHTML = sevenDaysLater //give new date to time range
+        console.log('after', document.getElementById('date-today').innerHTML)
+        generateCalendar() //generate new calendar based on new date
+        addReservedSlots()
+    }
+</script>
+<script>
+    document.getElementById('date-today').innerHTML = new Date(Date(Date.now()))
+    generateCalendar() //generate calendar
+    addReservedSlots()
+</script>
+
+
+{% endblock %}

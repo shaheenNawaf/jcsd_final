@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-full h-full">
+    <div class="w-full h-full bg-white z-20">
+        <div class="w-[90%] m-auto  mt-10 Montserrat">
+            <span class="text-[24px] font-bold">Employee lists</span>
+            <div class="mt-6" >
+                <div class="rounded-t-[6px] w-full bg-[#00AEEF] text-white Montserrat grid grid-cols-5 text-center text-[18px] py-2">
+                    <span>Name</span>
+                    <span>Status</span>
+                    <span>Position</span>
+                    <span>Contact Info</span>
+                    <span>Actions</span>
+                </div>
+                {% for employee in employeeProfiles %}
+                <div class="grid grid-cols-5 py-4 px-4">
+                    <span>{{ employee.lastName }}, {{ employee.firstName }}</span>
+                    <span>
+                        {% if employee.employmentStatus %}
+                        Active
+                        {% else %}
+                        Terminated
+                        {% endif %}
+                    </span>
+                    <span>{{ employee.position }}</span>
+                    <span>{{ employee.emailAddress }}</span>
+                    <a href="{% url 'employee-details' employee.id %}"
+                    class="text-center text-white bg-[#00AEEF] py-1 cursor-pointer w-[65px] rounded-[6px] m-auto
+                    transition-auto hover:text-[16px] text-[15px]">
+                    View
+                    </a>
+                </div>
+                <hr/>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

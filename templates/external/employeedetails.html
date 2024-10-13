@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{{ employeeProfile }}
+<div class="flex w-full h-full">
+    <div class="w-full h-full mt-36 bg-white z-20">
+        <div class="flex flex-row w-[85%] m-auto "> 
+            <div class="w-[335px] ">
+                <div class="h-[190px] w-[190px] bg-white rounded-[50%] mt-[-90px]">
+                    <img src="{% static 'images/avatar.svg' %}" alt="default pfp"/>
+                </div>
+                <div class="flex flex-col Montserrat text-[24px] gap-[10px] mt-6">
+                    <a href="{% url 'employee-details' employeeProfile.profileId.id %}" class="transition-auto hover:text-[26px] font-bold">Profile</span>
+                    <a href="{% url 'employee-attendance' employeeProfile.profileId.id %}"><span class="transition-auto hover:text-[26px]">Attendance</span></a>
+                    <a href="{% url 'employee-payslip' employeeProfile.profileId.id %}"><span class="transition-auto hover:text-[26px]">Payslip</span></a>
+                    <a href="{% url 'logout' %}" class="transition-auto hover:text-[26px]">Logout</a>
+                </div>
+            </div>
+            <div class="w-full mt-8 Montserrat">
+                <span class="text-[36px] ">{{ employeeProfile.profileId.firstName }} {{ employeeProfile.profileId.lastName }}</span>
+                <hr class="mt-3"/>
+                <form id="sign-up-form" class="login-form mt-8" method="POST" onsubmit="return validateData();" 
+                > {% csrf_token %}
+                    <div class="grid grid-cols-2 gap-[30px] ">
+                        <div class="flex flex-col gap-[10px]">
+                            <span>First Name</span>
+                            <input type="text" name="firstName" value="{{ employeeProfile.profileId.firstName }}" required/>
+                            <span>Middle Name</span>
+                            <input type="text" name="middleName" value="{{ employeeProfile.profileId.middleName }}" required/>
+                            <span>Last Name</span>
+                            <input type="text" name="lastName" value="{{ employeeProfile.profileId.lastName }}" required/>
+                            <span>Birthday</span>
+                            <input type="text" id="emp-bday" name="bday" value="{{ employeeProfile.profileId.birthdate }}" required/>
+
+                            <div>
+                                <span>Contact Number</span>
+                                <span class="ml-1 text-[12px] mt-[-2px] text-red-500" id="phone-num-error"></span>
+                            </div>
+                            <input id="phone-num-field" type="text" name="contactNumber" value="{{ employeeProfile.profileId.mobileNum }}" required/>
+
+                            <div>
+                                <span>Email</span>
+                                <span class="ml-1 text-[12px] mt-[-2px] text-red-500" id="email-error"></span>
+                            </div>
+                            <input type="text" name="email" id="email-field" value="{{ employeeProfile.profileId.userId.email }}" required/>
+                        </div>
+                        <div class="flex flex-col gap-[10px]">
+                            <span>Position</span>
+                            <input type="text" name="position" value="{{ employeeProfile.profileId.get_position_display }}" readonly/>
+                            <span>Address</span>
+                            <input type="text" name="address" value="{{ employeeProfile.streetAddress }}" required/>
+                            <div class="grid grid-cols-2 gap-[20px]  mt-[10px]">
+                                <div>
+                                    <span>City</span>
+                                    <input type="text" name="city" value="{{ employeeProfile.city }}" required/>
+                                </div>
+                                <div>
+                                    <span>Provice</span>
+                                    <input type="text" name="province" value="{{ employeeProfile.province }}" required/>
+                                </div>
+                                <div>
+                                    <span>Country</span>
+                                    <input type="text" name="country" value="{{ employeeProfile.country }}" required/>
+                                </div>
+                                <div>
+                                    <span>Zip Code</span>
+                                    <input type="text" name="zipCode" value="{{ employeeProfile.zipcode }}" required/>
+                                </div>
+                            </div>
+                            <div class="m-auto mt-8 flex flex-col text-center">
+                                <button type="submit" class="m-auto reg-submit-btn transition-auto hover:text-[18px]">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function validateData(){
+        phone = checkPhoneNum()
+        email = checkEmail()
+        if (!email || !phone ){
+            return false
+        }
+        return true
+    }
+    
+    function checkEmail(){
+        let user_email = document.getElementById('email-field').value
+        const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user_email);
+        if (!isValidEmail){
+            document.getElementById('email-field').classList.add("border-red-500")
+            document.getElementById('email-error').innerHTML = "Must enter a valid email address"
+            return false
+        }
+        else{
+            document.getElementById('email-field').classList.remove("border-red-500")
+            document.getElementById('email-error').innerHTML = ""
+            return true
+        }
+    }
+    function checkPhoneNum(){
+        let phoneNum = document.getElementById('phone-num-field').value
+        const isValidPhone = /^(09|\+639)\d{9}$/.test(phoneNum);
+
+        if (!isValidPhone){
+            document.getElementById('phone-num-field').classList.add("border-red-500")
+            document.getElementById('phone-num-error').innerHTML = "Must enter a valid Phone Number"
+            return false
+        }
+        else{
+            document.getElementById('phone-num-field').classList.remove("border-red-500")
+            document.getElementById('phone-num-error').innerHTML = ""
+            return true
+        }
+    }
+
+</script>
+<script>
+    function convertStringToDate(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString;
+        var dateParts = parts.split('-');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[1], 10) - 1];
+        var day = parseInt(dateParts[2], 10);
+        var year = parseInt(dateParts[0], 10);
+        return `${month} ${day}, ${year}`;
+        //return parts
+    }
+    document.getElementById("emp-bday").value = convertStringToDate(document.getElementById("emp-bday").value)
+    
+</script>
+{% endblock %}

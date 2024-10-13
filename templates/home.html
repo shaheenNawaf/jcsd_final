@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% if not user.is_staff %}
+<div class="grid grid-cols-2 w-[90%] m-auto">
+    <div class="flex flex-col text-white z-20 mt-32 w-[90%]">
+        <img src="{% static 'images/logo.svg' %}" alt="jcsd logo"/>
+        <div class="flex flex-col ml-2 Montserrat">
+            <span class="text-[67px]">MAINTENANCE</span>
+            <span class="text-[20px]">Our company provides quality services to people 
+                at homes with computers. We have the equipment to 
+                deep clean and restore any computer components to 
+                its former glory!
+            </span>
+        </div>
+        
+        <a href="{% if user.is_authenticated %} {% url 'book' %} {% else %} {% url 'login' %} {% endif %}">
+            <div class="cursor-pointer ml-2 rounded-[10px] w-[320px] h-[100px] bg-[#00AEEF] mt-5 auto-align-middle-row gap-[15px]  hover:gap-[25px] transition-auto">
+                <span class="mt-[-2px] Montserrat text-[40px]">Book Now</span>
+                <img src="{% static 'images/arrow-right.svg' %}" alt="arrow right"/>
+            </div>
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

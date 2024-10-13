@@ -1,0 +1,49 @@
+{% block content %}
+{% load static %}
+<div class="w-[100%] {% if user.is_staff %} bg-[#00AEEF] {% endif %} ">
+    {% if user.is_superuser %}
+    <div class="w-[95%] m-auto h-[100px] auto-align-middle-row">
+        <div>
+            <img src="{% static 'images/logo-white.svg' %}" alt="jcsd logo" />
+        </div>
+        <div class="flex flex-row ml-auto gap-[30px] text-[18px] Montserrat text-white">
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'employee-profiles' %}">Employees</a>
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'inventory' %}">Inventory</a>
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'booking-view' %}">Bookings</a>
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'logout' %}">Log Out</a>
+        </div>
+    </div>
+    {% elif user.is_staff %}
+    <div class="w-[95%] m-auto h-[100px] auto-align-middle-row">
+        <div>
+            <img src="{% static 'images/logo-white.svg' %}" alt="jcsd logo" />
+        </div>
+        <div class="flex flex-row ml-auto gap-[30px] text-[18px] Montserrat text-white">
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'inventory' %}">Inventory</a>
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'booking-view' %}">Bookings</a>
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'profile' %}">Profile</a>
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'logout' %}">Log Out</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="w-[95%] m-auto h-[100px] auto-align-middle-row">
+        <div>
+            <img src="{% static 'images/logo.svg' %}" alt="jcsd logo" />
+        </div>
+        <div class="flex flex-row ml-auto gap-[30px] text-[18px] Montserrat text-[#00AEEF]">
+            <a class=" hover:text-[20px] transition-auto font-bold" href="{% url 'home' %}">Home</a>
+            <a class=" hover:text-[20px] transition-auto" href="">Services</a>
+            <a class=" hover:text-[20px] transition-auto" href="">About Us</a>
+            {% if user.is_authenticated %}
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'profile' %}">Profile</a>
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'logout' %}">Log Out</a>
+            {% else %}
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'login' %}">Login</a>
+            <a class=" hover:text-[20px] transition-auto" href="{% url 'signup' %}">Sign Up</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+</div>
+{% endblock %}

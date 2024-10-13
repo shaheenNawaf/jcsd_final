@@ -1,0 +1,55 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>JCSD Booking System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% tailwind_css %}
+    <link rel="icon" type="image/x-icon" href="{% static 'images/icon.svg' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+{% include "partials/navbar.html" %}
+<div class="w-full h-[1139px] home-bg bg-cover z-0">
+    <div class="absolute bg-black opacity-50 z-10 w-full h-[1139px] ">
+    </div>
+    {% block content %}
+    {% endblock %}
+</div>
+
+<!-- MESSAGE MODAL -->
+{% if messages %}
+<div id="message-modal" class=" h-full pt-[18%] xl:pt-[10%] w-full fixed z-30 overflow-auto left-[0] top-[0] bg-[rgb(0,0,0)] bg-[rgba(0,0,0,0.4)]">
+    <div class="w-[280px] xl:w-[400px] p-5 m-auto bg-white rounded-[10px]">
+        <div id="withdraw-confirmation" class=""> <!--MODAL FOR WITHDRAWAL CONFIRMATION -->
+            <div class="flex flex-row">
+                <button onclick="RemoveMessageModal()" class="count-2 ml-auto mt-2 mr-2"><b>&#10005;</b></button>
+            </div>
+            <div class="w-[100%] m-auto text-center p-5 xl:p-10">
+                {% for message in messages %}
+                <p class="font-[500] text-[18px] xl:text-[20px] 2xl:text-[24px] Montserrat">{{ message }}</p>
+                {% endfor %}
+            </div>
+            <div class="flex flex-row text-[16px] justify-center">
+                <button onclick="RemoveMessageModal()" class="ml-2 border-0 bg-[#00AEEF] px-[3rem] py-[.40rem] font-[500] text-white Montserrat">Ok</button>
+            </div><br>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+{% endblock %}
+<script>
+    function OpenModal(){
+        document.getElementById('logout-modal').classList.remove('hidden')
+    }
+    function RemoveModal(){
+        document.getElementById('logout-modal').classList.add('hidden')
+    }
+    function RemoveMessageModal(){
+        document.getElementById('message-modal').classList.add('hidden')
+    }
+</script>
+</html>

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-full h-full">
+    <div class="w-full h-full mt-36 bg-white z-20">
+        <div class="flex flex-row w-[85%] m-auto "> 
+            <div class="w-[335px] ">
+                <div class="h-[190px] w-[190px] bg-white rounded-[50%] mt-[-90px]">
+                    <img src="{% static 'images/avatar.svg' %}" alt="default pfp"/>
+                </div>
+                <div class="flex flex-col Montserrat text-[24px] gap-[10px] mt-6">
+                    <a href="{% url 'employee-details' employeeProfile.profileId.id %}" class="transition-auto hover:text-[26px]">Profile</span>
+                    <a href="{% url 'employee-attendance' employeeProfile.profileId.id %}"><span class="font-bold transition-auto hover:text-[26px]">Attendance</span></a>
+                    <a href="{% url 'employee-payslip' employeeProfile.profileId.id %}"><span class="transition-auto hover:text-[26px]">Payslip</span></a>
+                    <a href="{% url 'logout' %}" class="transition-auto hover:text-[26px]">Logout</a>
+                </div>
+            </div>
+            <div class="w-full mt-8 Montserrat">
+                <span class="text-[36px] ">{{ employeeProfile.profileId.firstName }} {{ employeeProfile.profileId.MiddleName }} {{ employeeProfile.profileId.lastName }}</span>
+                <hr class="mt-3"/>
+                <div class="w-full h-auto grid-cols-1 grid gap-[10px]" id="attendance-list">
+                    <div class="flex flex-col  ">
+                        <span class="text-[#B6B6B6] text-[20px] mt-3">Feed</span>
+                        <div class="overflow-y-auto max-h-[550px]">
+                            {% for attendance in attendanceData %}
+                            <div class="w-full py-[10px] px-[16px] bg-[#EFEFEF] mt-3">
+                                <div class="flex flex-row text-[20px]">
+                                    <i class="fa-regular fa-clock mt-1 mr-2  {% if attendance.signInType == 'IN' %} text-green-500 {% else %} text-red-500 {% endif %}"></i>
+                                    <span>{{ attendance.signInType }} at <b class="attendace-date">{{ attendance.date }}</b></span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="flex flex-col mt-6">
+                        <div class="flex flex-row">
+                            <span class="text-[#B6B6B6] text-[20px] mt-3">Leave Requests</span>
+                        </div>
+                        <div class="overflow-y-auto h-[550px]">
+                            {% for leave in leaveData %}
+                            <div class="w-full py-[10px] px-[16px] bg-[#EFEFEF] mt-3">
+                                <div class="flex flex-row text-[20px]">
+                                    <i class="fa-solid fa-circle-left mt-1 mr-2"></i>
+                                    <span>{{ leave.leaveType }} at <b class=leave-date>{{ leave.dateFrom }}</b> to <b class=leave-date>{{ leave.dateTo }}</b></span>
+                                    <span class="ml-auto ">Status: <b class="leave-status">{{ leave.status }}</b></span>
+                                    {% if leave.status == "Pending" %}
+                                    <button class="ml-auto h-[35px] w-[140px] rounded-[8px] text-white bg-[#00AEEF] text-[16px] transition-auto hover:text-[17px]"
+                                    onclick="leaveRequestAction('{{leave.id}}')">Start Action</button>
+                                    {% else %}
+                                    <button class="ml-auto h-[35px] w-[140px] rounded-[8px] text-white bg-[#00AEEF] text-[16px] transition-auto hover:text-[17px]"
+                                    onclick="leaveRequestAction('{{leave.id}}')">View</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                </div>
+                <div>
+                    {% for leave in leaveData %}
+                    <form 
+                    class="mt-2 login-form hidden" 
+                    method="POST" 
+                    id="leave-form-{{leave.id}}"
+                    action="{% url 'emp-leave-action' employeeProfile.profileId.id leave.id %}" > {% csrf_token %} 
+                        <div class="grid grid-cols-3 gap-[30px] mt-6">
+                            <div class="flex flex-col">
+                                <label><b>Leave Type</b></label>
+                                <input type="text" class="w-[400px]" value="{{leave.leaveType}}" readonly/>
+                            </div>
+                            <div class="flex flex-col">
+                                <label><b>Date from</b></label>
+                                <input type="date" value="{{leave.dateFrom}}" readonly/>
+                            </div>
+                            <div class="flex flex-col">
+                                <label><b>Date to</b></label>
+                                <input type="date" value="{{leave.dateTo}}"readonly/>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex flex-col">
+                            <label><b>Note</b></label>
+                            <textarea class="rounded-[8px] h-[150px] mt-1" readonly>{{leave.note}}</textarea>
+                        </div>
+                        {% if leave.status == "Pending" %}
+                        <div class="mt-4">
+                            <div class="flex flex-row gap-[10px]">
+                                <input type="radio" name="new-status" class="mt-1" value="Approved" required/>
+                                <span  class="text-green-500 font-bold text-[18px]" >Approve</span>
+                            </div>
+                            <div class="flex flex-row gap-[10px]">
+                                <input type="radio" name="new-status" class="mt-1"value="Rejected" />
+                                <span class="text-red-500 font-bold text-[18px]" >Reject</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="mt-2 flex flex-col">
+                            <label><b class="text-red-500">Admin Note</b></label>
+                            <textarea class="rounded-[8px] h-[150px] mt-1" name="admin-note"  {% if leave.adminNote %} readonly {% else %} required {% endif %}>{{ leave.adminNote }}</textarea>
+                        </div>
+                        <div class="flex flex-row mt-6 ">
+                            <button class="flex flex-row gap-[5px]  text-[18px] hover:gap-[8px] transition-auto"
+                            onclick="closeLeaveFormA('{{leave.id}}')" type="button">
+                                <i class="fa-solid fa-arrow-left mt-1"></i>
+                                Back</button>
+                            {% if leave.status == "Pending" %}
+                            <button type="submit" class="ml-auto h-[35px] w-[120px] rounded-[8px] text-white bg-[#00AEEF] text-[18px] transition-auto hover:text-[19px]">Submit</button>
+                            {% endif %}
+                        </div>
+                    </form>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function leaveRequestAction(leaveId){
+        let AttendanceDiv = document.getElementById('attendance-list')
+        let empLeaveActionDiv = document.getElementById(`leave-form-${leaveId}`)
+        AttendanceDiv.classList.add('hidden')
+        AttendanceDiv.classList.remove('grid')
+        empLeaveActionDiv.classList.remove('hidden')
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function closeLeaveFormA(leaveId){
+        let form = document.getElementById(`leave-form-${leaveId}`)
+        let div = document.getElementById("attendance-list")
+        div.classList.remove("hidden")
+        div.classList.add("grid")
+
+        form.classList.add("hidden")
+        form.classList.remove("flex")
+    }
+</script>
+<script>
+    let leaveText = document.getElementsByClassName("leave-status")
+    for(text of leaveText){
+        if(text.innerHTML === "Rejected"){
+            text.classList.add("text-red-500")
+        }
+        else if(text.innerHTML === "Approved"){
+            text.classList.add("text-green-500")
+        }
+    }
+</script>
+<script>
+    function convertStringToDate(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString;
+        var dateParts = parts.split('-');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[1], 10) - 1];
+        var day = parseInt(dateParts[2], 10);
+        var year = parseInt(dateParts[0], 10);
+        return `${month} ${day}, ${year}`;
+        //return parts
+    }
+    function convertStringToDate2(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString;
+        var dateParts = parts.split('/');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[1], 10) - 1];
+        var day = parseInt(dateParts[0], 10);
+        var year = parseInt(dateParts[2], 10);
+        return `${month} ${day}, ${year}`;
+        //return parts
+    }
+    let leaveRequests = document.getElementsByClassName("leave-date")
+    for(request of leaveRequests){
+        request.innerHTML = convertStringToDate(request.innerHTML)
+    }
+
+    let attendanceDates = document.getElementsByClassName("attendace-date")
+    for(dates of attendanceDates){
+        dates.innerHTML = `${convertStringToDate2(dates.innerHTML.split(" ")[0])} - ${dates.innerHTML.split(" ")[1]} `
+    }
+    
+</script>
+{% endblock %}

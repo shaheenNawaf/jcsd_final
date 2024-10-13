@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-full h-full">
+    <div class="w-full h-full bg-white z-20">
+        <div class="w-[95%] m-auto h-full flex flex-row gap-[20px] mt-6" id="supplier-table">
+            <div class="w-[30%] h-auto Montserrat">
+                <div class="w-full rounded-[5px] p-5 flex flex-col border-2 ">
+                    <span class="text-[20px]">Search</span>
+                    <input type="text" class="rounded-[6px] h-[40px] mt-2" placeholder="search by name, address, number, email" id="search-input-supplier" onkeyup="searchSupplier()"/>
+                    <button class="h-[40px] w-[80px] bg-[#00AEEF] text-white rounded-[6px] mt-4 text-[16px] transition-auto hover:text-[17px]">Search</button>
+                </div>
+                <form 
+                class="w-full rounded-[5px] p-5 flex flex-col border-2 mt-8"
+                method="POST" 
+                onsubmit="return validateData();">{% csrf_token %} 
+                    <span class="text-[20px]">Supplier Form</span>
+                    <div class=" mt-4 flex flex-col">
+                        <span class="text-[17px]">Supplier Name</span>
+                        <input type="text" id="suppliername-field" class="rounded-[6px] h-[40px] mt-2" placeholder="Enter supplier name " name="name" required/>
+                        <span id="suppliername-error" class="text-[14px] mt-1  text-red-500"></span>
+                    </div>
+                    <div class=" mt-4 flex flex-col">
+                        <span class="text-[17px]">Address</span>
+                        <input type="text" class="rounded-[6px] h-[40px] mt-2" placeholder="Enter supplier address" name="address" required/>
+                    </div>
+                    <div class=" mt-4 flex flex-col">
+                        <span class="text-[17px]">Contact Number</span>
+                        <input type="text" class="rounded-[6px] h-[40px] mt-2" placeholder="Enter supplier contact number" name="contactNum" id="phone-num-field" required/>
+                        <span id="phone-num-error" class="text-[14px] mt-1  text-red-500"></span>
+                    </div>
+                    <div class=" mt-4 flex flex-col">
+                        <span class="text-[17px]">Email</span>
+                        <input type="text" class="rounded-[6px] h-[40px] mt-2" placeholder="Enter supplier email" name="email" id="email-field" required/>
+                        <span id="email-error" class="text-[14px] mt-1  text-red-500"></span>
+                    </div>
+                    <button type="submit" class="h-[40px] w-[80px] bg-[#00AEEF] text-white rounded-[6px] mt-6 text-[16px] transition-auto hover:text-[17px]">Submit</button>
+                </form>
+
+            </div>
+            <div class="w-[70%] h-[950px] rounded-[6px] border-2">
+                <div class="w-full bg-[#00AEEF] text-white Montserrat grid grid-cols-5 text-center text-[18px] py-2">
+                    <span>Supplier Name</span>
+                    <span>Address</span>
+                    <span>Contact Number</span>
+                    <span>Email</span>
+                    <span>Edit/Delete</span>
+                </div>
+                
+                <div class="overflow-auto h-[890px]">
+                    {% for supplier in supplierData %}
+                    <div class="w-full  text-black Montserrat grid grid-cols-5 gap-[10px] text-left text-[16px] py-4 px-2">
+                        <span id="supp-id-{{supplier.id}}" class="hidden">{{ supplier.id }}</span>
+                        <span id="supp-name-{{supplier.id}}">{{ supplier.name }}</span>
+                        <span id="supp-address-{{supplier.id}}">{{ supplier.address }}</span>
+                        <span id="supp-contactNum-{{supplier.id}}">{{ supplier.contactNum }}</span>
+                        <span id="supp-email-{{supplier.id}}">{{ supplier.email }}</span>
+                        <span class="flex flex-row gap-[15px] justify-center text-[#00AEEF] text-lg"> 
+                            <i onclick="openSupplierEditForm('{{supplier.id}}')" class="fa-solid fa-pen-to-square cursor-pointer"></i>
+                            <!--<a href="{% url 'delete-supplier' supplier.id %}"><i class="fa-solid fa-trash-can cursor-pointer"></i></a>-->
+                            <i onclick="confirmModalSupplier('{{supplier.id}}')" class="fa-solid fa-trash-can cursor-pointer"></i>
+                        </span>
+                    </div>
+                {% endfor %}
+                </div>
+                <div class="hidden">
+                    {% for supplier in supplierData %}
+                        <span class="supplier_names">{{supplier.name}}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div id="supplier-edit-form" class="w-[40%] m-auto hidden">
+            <form 
+            class="w-full rounded-[5px] p-5 flex flex-col border-2 mt-8"
+            method="POST" 
+            action="{% url 'edit-supplier' %}"
+            onsubmit="return validateDataEdit();">{% csrf_token %} 
+                <span class="text-[20px]">Supplier Form</span>
+                <div class=" mt-4 flex flex-col">
+                    <input id="supplier-name-previous" class="hidden" />
+                    <input id="supplier-id-edit" name="supplier-id-edit" class="hidden" />
+
+                    <span class="text-[17px]">Supplier Name</span>
+                    <input type="text" id="suppliername-field-edit" class="rounded-[6px] h-[40px] mt-2" name="name-edit" required/>
+                    <span id="suppliername-error-edit" class="text-[14px] mt-1  text-red-500"></span>
+                </div>
+                <div class=" mt-4 flex flex-col">
+                    <span class="text-[17px]">Address</span>
+                    <input type="text" class="rounded-[6px] h-[40px] mt-2"  name="address-edit" id="address-field-edit" required/>
+                </div>
+                <div class=" mt-4 flex flex-col">
+                    <span class="text-[17px]">Contact Number</span>
+                    <input type="text" class="rounded-[6px] h-[40px] mt-2"  name="contactNum-edit" id="phone-num-field-edit" required/>
+                    <span id="phone-num-error-edit" class="text-[14px] mt-1  text-red-500"></span>
+                </div>
+                <div class=" mt-4 flex flex-col">
+                    <span class="text-[17px]">Email</span>
+                    <input type="text" class="rounded-[6px] h-[40px] mt-2" name="email-edit" id="email-field-edit" required/>
+                    <span id="email-error-edit" class="text-[14px] mt-1  text-red-500"></span>
+                </div>
+                <button type="submit" class="h-[40px] w-[80px] bg-[#00AEEF] text-white rounded-[6px] mt-6 text-[16px] transition-auto hover:text-[17px]">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+{% for supplier in supplierData %}
+<div id="confirm-modal-{{ supplier.id }}" class="hidden h-full pt-[18%] xl:pt-[10%] w-full fixed z-30 overflow-auto left-[0] top-[0] bg-[rgb(0,0,0)] bg-[rgba(0,0,0,0.4)]">
+    <div class="w-[280px] xl:w-[400px] p-5 m-auto bg-white">
+        <div id="withdraw-confirmation" class="Montserrat "> <!--MODAL FOR WITHDRAWAL CONFIRMATION -->
+            <div class="flex flex-row">
+                <button onclick="RemoveModalSupplier('{{ supplier.id }}')" class="count-2 ml-auto mt-2 mr-2"><b>&#10005;</b></button>
+            </div>
+            <div class="w-[100%] m-auto text-center p-5 xl:p-10 ">
+                <p class="font-[500] text-[18px] xl:text-[20px] 2xl:text-[24px]">Are you sure you want to Delete this item? <b>This action is irreversible</b></p>
+            </div>
+            <div class="flex flex-row text-[16px] justify-center">
+                <button onclick="RemoveModalSupplier('{{ supplier.id }}')" class="border-0  px-[3rem] py-[.40rem] font-[500] text-primary">No</button>
+                <a href="{% url 'delete-supplier' supplier.id %}"><button onclick="" class="ml-2 border-0 bg-[#00AEEF] px-[3rem] py-[.40rem] font-[500] text-white">Yes</button></a>
+            </div><br>
+        </div>
+    </div>
+</div>
+{% endfor %}
+<script>
+    function openSupplierEditForm(supplier_id){
+        let supplierEditForm = document.getElementById('supplier-edit-form')
+        let supplierTable = document.getElementById('supplier-table')
+        supplierEditForm.classList.remove("hidden")
+        supplierEditForm.classList.add("flex")
+        supplierTable.classList.add("hidden")
+        supplierTable.classList.remove("flex")
+
+        document.getElementById('supplier-id-edit').value = supplier_id
+        document.getElementById("suppliername-field-edit").value = document.getElementById(`supp-name-${supplier_id}`).innerHTML
+        document.getElementById("address-field-edit").value = document.getElementById(`supp-address-${supplier_id}`).innerHTML
+        document.getElementById("phone-num-field-edit").value = document.getElementById(`supp-contactNum-${supplier_id}`).innerHTML
+        document.getElementById("email-field-edit").value = document.getElementById(`supp-email-${supplier_id}`).innerHTML
+        document.getElementById("supplier-name-previous").value = document.getElementById(`supp-name-${supplier_id}`).innerHTML
+    }
+</script>
+<script>
+    function confirmModalSupplier(supplierId){
+        document.getElementById(`confirm-modal-${supplierId}`).classList.remove('hidden')
+    }
+    function RemoveModalSupplier(supplierId){
+        document.getElementById(`confirm-modal-${supplierId}`).classList.add('hidden')
+    }
+</script>
+<script>
+    function validateData(){
+        let phone = checkPhoneNum()
+        let email = checkEmail()
+        let name = checkName()
+        if (!email || !phone || !name ){
+            return false
+        }
+        return true
+    }
+
+    function checkPhoneNum(){
+        let phoneNum = document.getElementById('phone-num-field').value
+        const isValidPhone = /^(09|\+639)\d{9}$/.test(phoneNum);
+        if (!isValidPhone){
+            document.getElementById('phone-num-field').classList.add("border-red-500")
+            document.getElementById('phone-num-error').innerHTML = "Must enter a valid Phone Number"
+            return false
+        }
+        else{
+            document.getElementById('phone-num-field').classList.remove("border-red-500")
+            document.getElementById('phone-num-error').innerHTML = ""
+            return true
+        }
+    }
+    function checkEmail(){
+        let user_email = document.getElementById('email-field').value
+        const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user_email);
+        if (!isValidEmail){
+            document.getElementById('email-field').classList.add("border-red-500")
+            document.getElementById('email-error').innerHTML = "Must enter a valid email address"
+            return false
+        }
+        else{
+            document.getElementById('email-field').classList.remove("border-red-500")
+            document.getElementById('email-error').innerHTML = ""
+            return true
+        }
+    }
+    
+    function checkName(){
+        let suppnames = document.getElementsByClassName('supplier_names') //existing supplier names
+        let supp_name_input = document.getElementById('suppliername-field').value //username input
+        for (suppname of suppnames){
+            if (suppname.innerHTML.toLowerCase() === supp_name_input.toLowerCase()){
+                document.getElementById('suppliername-field').classList.add("border-red-500")
+                document.getElementById('suppliername-error').innerHTML = "Supplier Name already Exists"
+                return false
+            }
+        }
+        document.getElementById('suppliername-field').classList.remove("border-red-500")
+        document.getElementById('suppliername-error').innerHTML = ""
+        return true
+    }
+</script>
+
+<script>
+    function validateDataEdit(){
+        let phone = checkPhoneNumEdit()
+        let email = checkEmailEdit()
+        let name = checkNameEdit()
+        if (!email || !phone || !name ){
+            return false
+        }
+        return true
+    }
+
+    function checkPhoneNumEdit(){
+        let phoneNum = document.getElementById('phone-num-field-edit').value
+        const isValidPhone = /^(09|\+639)\d{9}$/.test(phoneNum);
+        if (!isValidPhone){
+            document.getElementById('phone-num-field-edit').classList.add("border-red-500")
+            document.getElementById('phone-num-error-edit').innerHTML = "Must enter a valid Phone Number"
+            return false
+        }
+        else{
+            document.getElementById('phone-num-field-edit').classList.remove("border-red-500")
+            document.getElementById('phone-num-error-edit').innerHTML = ""
+            return true
+        }
+    }
+    function checkEmailEdit(){
+        let user_email = document.getElementById('email-field-edit').value
+        const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user_email);
+        if (!isValidEmail){
+            document.getElementById('email-field-edit').classList.add("border-red-500")
+            document.getElementById('email-error-edit').innerHTML = "Must enter a valid email address"
+            return false 
+        }
+        else{
+            document.getElementById('email-field-edit').classList.remove("border-red-500")
+            document.getElementById('email-error-edit').innerHTML = ""
+            return true
+        }
+    }
+    
+    function checkNameEdit(){
+        let suppnames = document.getElementsByClassName('supplier_names') //existing supplier names
+        let supp_name_input = document.getElementById('suppliername-field-edit').value //username input
+        for (suppname of suppnames){
+            if (suppname.innerHTML.toLowerCase() === supp_name_input.toLowerCase()){
+                if(supp_name_input.toLowerCase() === document.getElementById('supplier-name-previous').value.toLowerCase()){
+                    console.log("no changes in name")
+                }
+                else{
+                    document.getElementById('suppliername-field-edit').classList.add("border-red-500")
+                    document.getElementById('suppliername-error-edit').innerHTML = "Supplier Name already Exists"
+                    return false
+                }
+            }
+        }
+        document.getElementById('suppliername-field-edit').classList.remove("border-red-500")
+        document.getElementById('suppliername-error-edit').innerHTML = ""
+        return true
+    }
+</script>
+<script>
+    function searchSupplier() {
+        var input, filter, grid, items, spans, span, i, txtValue;
+        input = document.getElementById('search-input-supplier');
+        filter = input.value.toUpperCase();
+        grid = document.querySelector('.overflow-auto');
+
+        items = grid.getElementsByClassName('grid-cols-5');
+
+        for (i = 0; i < items.length; i++) {
+            spans = items[i].getElementsByTagName('span');
+            for (var j = 0; j < 5; j++) {  // Assuming you want to search in the first three spans (Supplier Name, Address, Contact Number)
+                span = spans[j];
+                if (span) {
+                    txtValue = span.textContent || span.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        items[i].style.display = '';
+                        break;  // Exit the inner loop if a match is found
+                    } else {
+                        items[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

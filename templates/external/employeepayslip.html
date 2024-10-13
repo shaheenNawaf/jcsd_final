@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-full h-full">
+    <div class="w-full h-full mt-36 bg-white z-20">
+        <div class="flex flex-row w-[85%] m-auto "> 
+            <div class="w-[335px] ">
+                <div class="h-[190px] w-[190px] bg-white rounded-[50%] mt-[-90px]">
+                    <img src="{% static 'images/avatar.svg' %}" alt="default pfp"/>
+                </div>
+                <div class="flex flex-col Montserrat text-[24px] gap-[10px] mt-6">
+                    <a href="{% url 'employee-details' employeeProfile.profileId.id %}" class="transition-auto hover:text-[26px]">Profile</span>
+                    <a href="{% url 'employee-attendance' employeeProfile.profileId.id %}"><span class="transition-auto hover:text-[26px]">Attendance</span></a>
+                    <a href="{% url 'employee-payslip' employeeProfile.profileId.id %}"><span class="font-bold transition-auto hover:text-[26px]">Payslip</span></a>
+                    <a href="{% url 'logout' %}" class="transition-auto hover:text-[26px]">Logout</a>
+                </div>
+            </div>
+            <div class="w-full mt-8 Montserrat">
+                <span class="text-[36px] ">{{ employeeProfile.profileId.firstName }} {{ employeeProfile.profileId.MiddleName }} {{ employeeProfile.profileId.lastName }}</span>
+                <hr class="mt-3"/>
+                <div class="w-full h-auto grid-cols-1 grid gap-[10px]" id="attendance-list">
+                    <div class="flex flex-col  ">
+                        <div class="flex flex-row gap-[50px] mt-3">
+                            <span class="text-[#B6B6B6] text-[20px]">{{ employeeProfile.profileId.lastName }}'s Payslips</span>
+                            <button class="h-[35px] w-[200px] rounded-[8px] text-white bg-[#00AEEF] text-[18px] transition-auto hover:text-[19px]"
+                            onclick="openPaySlipForm()">Generate Payslip </button>
+                        </div>
+                        <div id="payslip-container">
+                            {% for salary in employeeSalaryList %}
+                            <div id="payslip-container-items">
+                                <div class="mt-6 payslip-item hidden" id="payslip-item-1">
+                                    <div class="flex flex-row w-[25%] text-[20px]">
+                                        <i class="fa-solid fa-angle-left mr-auto mt-[4px] cursor-pointer hover:text-[#00AEEF]"
+                                        onclick="Prev()" ></i>
+                                        <span><b>{{ salary.date|date:"M. Y" }}</b></span>
+                                        <i class="fa-solid fa-angle-right ml-auto mt-[4px] cursor-pointer hover:text-[#00AEEF]"
+                                        onclick="Next()" ></i>
+                                    </div>
+                                    <hr class="my-4"/>
+                                    <div class="flex flex-row w-[70%]">
+                                        <div class="w-[50%] font-bold flex flex-col gap-[20px] text-[18px]">
+                                            <span>Rate Per Hour: </span>
+                                            <span>Hours Worked: </span>
+                                            <span>Adjustments: </span>
+                                            <span>Bonus: </span>
+                                        </div>
+                                        <div class="w-[50%] flex flex-col gap-[20px] text-[18px]">
+                                            <span>Php. {{ salary.ratePerHour }}</span>
+                                            <span>{{ salary.hoursWorked }}</span>
+                                            <span>Php. {{ salary.adjustments }}</span>
+                                            <span>Php. {{ salary.bonus }}</span>
+                                        </div>
+                                    </div>
+                                    <hr class="my-4"/>
+                                    <div class="flex flex-row w-[70%]">
+                                        <div class="w-[50%] font-bold flex flex-col gap-[20px] text-[18px]">
+                                            <span>Total: </span>
+                                        </div>
+                                        <div class="w-[50%] flex flex-col gap-[20px] text-[18px]">
+                                            <span>Php. {{ salary.totalSalary|floatformat:"0" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div id="payslip-form" class="hidden">
+                            <form class="login-form w-[50%] flex flex-col"
+                            onsubmit="return validateSalaryForm()"
+                            method="POST" 
+                            action="{% url 'save-salary' employeeProfile.profileId.id %}" > {% csrf_token %}
+                                <div class="flex flex-col gap-[6px] py-1">
+                                    <label><b>Date</b></label>
+                                    <input type="month" name="salaryDate" id="salaryDate" required/>
+                                </div>
+                                <div class="flex flex-col gap-[6px] py-1">
+                                    <label><b>Rate per Hour</b></label>
+                                    <input type="text" name="ratePerHour" value='{% if employeeProfile.profileId.position == "TECH" %}400{% elif employeeProfile.profileId.position == "JRTECH" %}250{% elif employeeProfile.profileId.position == "SMM" %}400{% elif employeeProfile.profileId.position == "MM" %}500{% else %}300{% endif %}'
+                                     readonly/>
+                                </div>
+                                <div class="flex flex-col gap-[6px] py-1">
+                                    <label><b>Hours Worked</b></label>
+                                    <input type="text" name="hoursWorked" value="224" required/>
+                                </div>
+                                <div class="flex flex-col gap-[6px] py-1">
+                                    <label><b>Adjustments</b></label>
+                                    <input type="number" name="adjustments" class="w-full rounded-[5px] h-[59px]" required/>
+                                </div>
+                                <div class="flex flex-col gap-[6px] py-1">
+                                    <label><b>Bonus</b></label>
+                                    <input type="number" name="bonus" class="w-full rounded-[5px] h-[59px]" required/>
+                                </div>
+                                <div class="mt-4 flex flex-row">
+                                    <button class="flex flex-row gap-[5px]  text-[18px] hover:gap-[8px] transition-auto"
+                                    onclick="closePaySlipForm()" type="button">
+                                    <i class="fa-solid fa-arrow-left mt-1"></i>
+                                    Back</button>
+                                    <button type="submit" class="ml-auto h-[35px] w-[120px] rounded-[8px] text-white bg-[#00AEEF] text-[18px] transition-auto hover:text-[19px]">Submit</button>
+                            
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <span id="number-of-salaries" class="hidden">{{ employeeSalaryList|length }}</span>
+                {% for salary in employeeSalaryList %}
+                <div class="hidden salaryList">{{ salary.date|date:"Y-m" }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function validateSalaryForm(){
+        let salaryInput = `${document.getElementById("salaryDate").value}`
+        let salaryList = document.getElementsByClassName("salaryList")
+        console.log("salary", salaryInput)
+        for(salary of salaryList){
+            console.log(salary.innerHTML)
+            if(salary.innerHTML === salaryInput){
+                alert("Salary for the inputted month already exists please double check")
+                return false
+            }
+        }
+        return true
+    }
+</script>
+<script>
+    function openPaySlipForm(){ //OPENS THE PAYSLIP FORM
+        let form = document.getElementById("payslip-form")
+        let div = document.getElementById("payslip-container")
+        form.classList.remove("hidden")
+        div.classList.add("hidden")
+    }
+    function closePaySlipForm(){ //CLOSES THE PAYSLIP FORM
+        let form = document.getElementById("payslip-form")
+        let div = document.getElementById("payslip-container")
+        form.classList.add("hidden")
+        div.classList.remove("hidden")
+    }
+</script>
+<script>
+    let currentPayslipIndex = parseInt(document.getElementById('number-of-salaries').innerHTML); // GETS THE COUNT OF ALL THE PAYSLIPS THAT IS ALREADY SAVED IN THE DATABASE
+    function showPayslip(index) { //SHOWS THE LIST OF THE PAYSLIP IN A PAGINATION ORDER
+        const payslips = document.querySelectorAll('.payslip-item');
+        payslips.forEach((payslip, i) => {
+            if (i + 1 === index) {
+                payslip.classList.remove("hidden");
+            } else {
+                payslip.classList.add("hidden")
+            }
+        });
+    }
+    function Prev() { //PAYSLIP LIST PAGINATION
+        if (currentPayslipIndex > 1) {
+            currentPayslipIndex--;
+            showPayslip(currentPayslipIndex);
+        }
+    }
+    function Next() { //PAYSLIP LIST PAGINATION
+        if (currentPayslipIndex < parseInt(document.getElementById('number-of-salaries').innerHTML)) { // Replace with the actual number of payslips
+            currentPayslipIndex++;
+            showPayslip(currentPayslipIndex);
+        }
+    }
+    showPayslip(currentPayslipIndex);// Initialize Payslip lists
+</script>
+<script>
+    function leaveRequestAction(leaveId){ //OPENS THE LEAVE FORM FOR LEAVE ACCEPTANCE/REJECTION
+        let AttendanceDiv = document.getElementById('attendance-list')
+        let empLeaveActionDiv = document.getElementById(`leave-form-${leaveId}`)
+        AttendanceDiv.classList.add('hidden')
+        AttendanceDiv.classList.remove('grid')
+        empLeaveActionDiv.classList.remove('hidden')
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function closeLeaveFormA(leaveId){ //CLOSES THE LEAVE FORM
+        let form = document.getElementById(`leave-form-${leaveId}`)
+        let div = document.getElementById("attendance-list")
+        div.classList.remove("hidden")
+        div.classList.add("grid")
+        form.classList.add("hidden")
+        form.classList.remove("flex")
+    }
+</script>
+<script>
+    let leaveText = document.getElementsByClassName("leave-status") //CHANGES THE FONT COLOR OF THE LEAVE STATUS BASED ON VALUE
+    for(text of leaveText){
+        if(text.innerHTML === "Rejected"){ //CHANGES TEXT TO RED IF VALUE IS "Rejected"
+            text.classList.add("text-red-500")
+        }
+        else if(text.innerHTML === "Approved"){ //CHANGES TEXT TO GREEN IF VALUE IS "Approved"
+            text.classList.add("text-green-500")
+        }
+    }
+</script>
+<script>
+    function convertStringToDate(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString;
+        var dateParts = parts.split('-');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[1], 10) - 1];
+        var day = parseInt(dateParts[2], 10);
+        var year = parseInt(dateParts[0], 10);
+        return `${month} ${day}, ${year}`;
+        //return parts
+    }
+    function convertStringToDate2(inputString) { //STRING TO DATE FUNCTION
+        var parts = inputString;
+        var dateParts = parts.split('/');
+        var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+        var month = months[parseInt(dateParts[1], 10) - 1];
+        var day = parseInt(dateParts[0], 10);
+        var year = parseInt(dateParts[2], 10);
+        return `${month} ${day}, ${year}`;
+        //return parts
+    }
+    let leaveRequests = document.getElementsByClassName("leave-date") //CONVERTS TO PROPER DATE FORMAT
+    for(request of leaveRequests){
+        request.innerHTML = convertStringToDate(request.innerHTML)
+    }
+    let attendanceDates = document.getElementsByClassName("attendace-date") //CONVERTS TO PROPER DATE FORMAT
+    for(dates of attendanceDates){
+        dates.innerHTML = `${convertStringToDate2(dates.innerHTML.split(" ")[0])} - ${dates.innerHTML.split(" ")[1]} `
+    }
+    
+</script>
+
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="flex w-full h-full">
+    <div class="w-full h-full bg-white z-20">
+        <div class="w-[90%] m-auto  mt-10 Montserrat">
+            <div class="flex flex-row ">
+                <span class="text-[28px] font-bold">Monthly Reports</span>
+                <div class="ml-auto flex flex-row gap-[20px]">
+                    <form class="gap-[20px] flex flex-row">
+                        <input type="month" required/>
+                        <button class="bg-[#00AEEF] w-[160px] rounded-[6px] text-white transition-auto hover:text-[17px]">Generate Report</button>
+                    </form>
+                </div>
+            </div>
+            <div class="grid grid-cols-4 gap-[10px] mt-8">
+                <div class="border-2 w-[300px] h-[150px] border-black text-[30px] flex flex-col px-[10px]">
+                    <span>Number of Sales</span>
+                    <span class="text-[#00AEEF]">162</span>
+                </div>
+                <div class="border-2 w-[300px] h-[150px] border-black text-[30px] flex flex-col px-[10px]">
+                    <span>Revenue</span>
+                    <span class="text-[#00AEEF]">Php. 162, 000</span>
+                </div>
+                <div class="border-2 w-[300px] h-[150px] border-black text-[30px] flex flex-col px-[10px]">
+                    <span>Profit</span>
+                    <span class="text-[#00AEEF]">Php. 162, 000</span>
+                </div>
+                <div class="border-2 w-[300px] h-[150px] border-black text-[30px] flex flex-col px-[10px]">
+                    <span>Cost</span>
+                    <span class="text-[#00AEEF]">Php. 162, 000</span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

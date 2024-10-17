@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /**
  * This is a minimal config.
  *
@@ -42,7 +43,15 @@ module.exports = {
         // '../../**/*.py'
     ],
     theme: {
-        extend: {},
+        fontFamily: {
+            'nunito': ['Nunito Sans', 'sans-serif'],
+        },
+        extend: {
+            colors: {
+                'blue-active': '',
+                
+            }
+        }
     },
     plugins: [
         /**
